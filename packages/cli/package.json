@@ -1,0 +1,23 @@
+{
+  "name": "@radar/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "radar": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "start": "node dist/index.js",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "convex": "^1.21.0"
+  },
+  "devDependencies": {
+    "@radar/typescript-config": "workspace:*",
+    "typescript": "5.9.2"
+  }
+}

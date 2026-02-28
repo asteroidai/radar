@@ -1,0 +1,21 @@
+{
+  "name": "@radar/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "start": "node dist/server.js",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "convex": "^1.21.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@radar/typescript-config": "workspace:*",
+    "typescript": "5.9.2"
+  }
+}
