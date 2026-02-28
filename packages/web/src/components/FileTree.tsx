@@ -1,18 +1,21 @@
 import { FileText, Folder } from "lucide-react";
-import type { KnowledgeFile } from "@/lib/mock-data";
+
+interface FileEntry {
+  path: string;
+}
 
 interface FileTreeProps {
-  files: KnowledgeFile[];
+  files: FileEntry[];
   selectedPath: string | null;
   onSelect: (path: string) => void;
 }
 
 interface GroupedFiles {
-  root: KnowledgeFile[];
-  dirs: Record<string, KnowledgeFile[]>;
+  root: FileEntry[];
+  dirs: Record<string, FileEntry[]>;
 }
 
-function groupFiles(files: KnowledgeFile[]): GroupedFiles {
+function groupFiles(files: FileEntry[]): GroupedFiles {
   const result: GroupedFiles = { root: [], dirs: {} };
   for (const file of files) {
     const slashIdx = file.path.indexOf("/");
@@ -66,7 +69,7 @@ function FileItem({
   selected,
   onSelect,
 }: {
-  file: KnowledgeFile;
+  file: FileEntry;
   selected: boolean;
   onSelect: (path: string) => void;
 }) {

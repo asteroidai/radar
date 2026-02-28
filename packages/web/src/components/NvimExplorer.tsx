@@ -1,14 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
-import {
-  getSites,
-  getFilesBySite,
-  getFile,
-  type Site,
-  type KnowledgeFile,
-} from "@/lib/mock-data";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 
 // Catppuccin Mocha palette
 const C = {
@@ -32,19 +27,34 @@ const C = {
   teal: "#94e2d5",
 };
 
+interface FileRef {
+  domain: string;
+  path: string;
+  version: number;
+  lastContributor: string;
+}
+
 interface TreeNode {
   name: string;
   domain?: string;
-  file?: KnowledgeFile;
+  file?: FileRef;
   children?: TreeNode[];
-  expanded?: boolean;
 }
 
-function buildTree(sites: Site[]): TreeNode[] {
+function buildTree(
+  sites: { domain: string }[],
+  allFiles: { domain: string; path: string; version: number; lastContributor: string }[],
+): TreeNode[] {
+  // Group files by domain
+  const filesByDomain: Record<string, typeof allFiles> = {};
+  for (const f of allFiles) {
+    (filesByDomain[f.domain] ??= []).push(f);
+  }
+
   return sites.map((site) => {
-    const files = getFilesBySite(site.domain);
-    const dirs: Record<string, KnowledgeFile[]> = {};
-    const rootFiles: KnowledgeFile[] = [];
+    const files = filesByDomain[site.domain] ?? [];
+    const dirs: Record<string, typeof files> = {};
+    const rootFiles: typeof files = [];
 
     for (const f of files) {
       const slash = f.path.indexOf("/");
@@ -80,26 +90,34 @@ function buildTree(sites: Site[]): TreeNode[] {
 }
 
 export function NvimExplorer({ fullScreen = false }: { fullScreen?: boolean }) {
-  const sites = getSites();
-  const tree = buildTree(sites);
+  const sites = useQuery(api.sites.list);
+  const allFiles = useQuery(api.files.listAll);
 
-  const [expanded, setExpanded] = useState<Set<string>>(
-    new Set([sites[0]?.domain ?? ""]),
-  );
+  const tree = sites && allFiles ? buildTree(sites, allFiles) : [];
+
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedFile, setSelectedFile] = useState<{
     domain: string;
     path: string;
-  } | null>(() => {
-    const first = sites[0];
-    if (!first) return null;
-    const files = getFilesBySite(first.domain);
-    const readme = files.find((f) => f.path === "README.md") ?? files[0];
-    return readme ? { domain: first.domain, path: readme.path } : null;
-  });
+  } | null>(null);
 
-  const currentFile = selectedFile
-    ? (getFile(selectedFile.domain, selectedFile.path) ?? null)
-    : null;
+  // Auto-select first file once data loads
+  useEffect(() => {
+    if (sites && allFiles && !selectedFile && sites.length > 0) {
+      const firstDomain = sites[0]!.domain;
+      setExpanded(new Set([firstDomain]));
+      const domainFiles = allFiles.filter((f) => f.domain === firstDomain);
+      const readme = domainFiles.find((f) => f.path === "README.md") ?? domainFiles[0];
+      if (readme) {
+        setSelectedFile({ domain: firstDomain, path: readme.path });
+      }
+    }
+  }, [sites, allFiles, selectedFile]);
+
+  const currentFile = useQuery(
+    api.files.getByDomainPath,
+    selectedFile ? { domain: selectedFile.domain, path: selectedFile.path } : "skip",
+  );
 
   function toggle(key: string) {
     setExpanded((prev) => {

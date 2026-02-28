@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { getSites } from "@/lib/mock-data";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { SearchBar } from "@/components/SearchBar";
 import { KnowledgeCard } from "@/components/KnowledgeCard";
 import { TerminalWidget } from "@/components/TerminalWidget";
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const sites = getSites();
+  const sites = useQuery(api.sites.list);
 
   return (
     <div>
@@ -68,9 +69,15 @@ function HomePage() {
           <NvimExplorer />
         </Link>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {sites.map((site) => (
-            <KnowledgeCard key={site.domain} site={site} />
-          ))}
+          {sites === undefined ? (
+            [...Array(3)].map((_, i) => (
+              <div key={i} className="h-40 animate-pulse rounded-lg bg-zinc-100" />
+            ))
+          ) : (
+            sites.map((site) => (
+              <KnowledgeCard key={site._id} site={site} />
+            ))
+          )}
         </div>
       </div>
     </div>

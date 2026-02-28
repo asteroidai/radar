@@ -13,6 +13,26 @@ export const listBySite = query({
   },
 });
 
+export const listByDomain = query({
+  args: { domain: v.string() },
+  handler: async (ctx, args) => {
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_domain_path", (q) => q.eq("domain", args.domain))
+      .collect();
+
+    return files.map(({ content: _content, ...frontmatter }) => frontmatter);
+  },
+});
+
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const files = await ctx.db.query("files").collect();
+    return files.map(({ content: _content, ...frontmatter }) => frontmatter);
+  },
+});
+
 export const getByDomainPath = query({
   args: { domain: v.string(), path: v.string() },
   handler: async (ctx, args) => {

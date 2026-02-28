@@ -1,8 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
-import type { Site } from "@/lib/mock-data";
 
-export function KnowledgeCard({ site }: { site: Site }) {
+interface SiteData {
+  domain: string;
+  name: string;
+  description: string;
+  tags: string[];
+  fileCount: number;
+}
+
+export function KnowledgeCard({ site }: { site: SiteData }) {
   return (
     <Link
       to="/sites/$domain"

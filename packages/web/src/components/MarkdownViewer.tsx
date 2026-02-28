@@ -3,9 +3,17 @@ import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 import { GitBranch, User, FileCode, FileText } from "lucide-react";
-import type { KnowledgeFile } from "@/lib/mock-data";
 
-export function MarkdownViewer({ file }: { file: KnowledgeFile | null }) {
+interface FileData {
+  path: string;
+  title: string;
+  content: string;
+  version: number;
+  lastContributor: string;
+  lastChangeReason: string;
+}
+
+export function MarkdownViewer({ file }: { file: FileData | null }) {
   const [raw, setRaw] = useState(false);
 
   if (!file) {
@@ -32,7 +40,7 @@ export function MarkdownViewer({ file }: { file: KnowledgeFile | null }) {
               {file.lastContributor}
             </span>
             <span className="text-zinc-300">&middot;</span>
-            <span>{file.changeReason}</span>
+            <span>{file.lastChangeReason}</span>
           </div>
         </div>
 

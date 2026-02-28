@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { ArrowLeft, Globe, FileText } from "lucide-react";
-import { getSiteByDomain, getFilesBySite, getFile } from "@/lib/mock-data";
 import { FileTree } from "@/components/FileTree";
 import { MarkdownViewer } from "@/components/MarkdownViewer";
 
@@ -11,15 +12,32 @@ export const Route = createFileRoute("/sites/$domain")({
 
 function SiteDetailPage() {
   const { domain } = Route.useParams();
-  const site = getSiteByDomain(domain);
-  const files = getFilesBySite(domain);
-  const [selectedPath, setSelectedPath] = useState<string>(
-    files.find((f) => f.path === "README.md")?.path ?? files[0]?.path ?? "",
+  const site = useQuery(api.sites.getByDomain, { domain });
+  const files = useQuery(api.files.listByDomain, { domain });
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+
+  // Set default selected path once files load
+  const activePath =
+    selectedPath ??
+    files?.find((f) => f.path === "README.md")?.path ??
+    files?.[0]?.path ??
+    null;
+
+  const currentFile = useQuery(
+    api.files.getByDomainPath,
+    activePath ? { domain, path: activePath } : "skip",
   );
 
-  const currentFile = getFile(domain, selectedPath) ?? null;
+  if (site === undefined || files === undefined) {
+    return (
+      <div className="space-y-5">
+        <div className="h-10 w-64 animate-pulse rounded bg-zinc-100" />
+        <div className="h-[600px] animate-pulse rounded-xl bg-zinc-100" />
+      </div>
+    );
+  }
 
-  if (!site) {
+  if (site === null) {
     return (
       <div className="space-y-4 py-12 text-center">
         <p className="text-zinc-500">Site not found</p>
@@ -78,14 +96,14 @@ function SiteDetailPage() {
           </div>
           <FileTree
             files={files}
-            selectedPath={selectedPath}
+            selectedPath={activePath}
             onSelect={setSelectedPath}
           />
         </div>
 
         {/* Content area */}
         <div className="min-w-0 flex-1 p-6">
-          <MarkdownViewer file={currentFile} />
+          <MarkdownViewer file={currentFile ?? null} />
         </div>
       </div>
     </div>

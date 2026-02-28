@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { formatDistanceToNow } from "date-fns";
 import { FileText } from "lucide-react";
-import { getContributions } from "@/lib/mock-data";
 import { ContributorBadge } from "@/components/ContributorBadge";
 
 export const Route = createFileRoute("/contributions")({
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/contributions")({
 });
 
 function ContributionsPage() {
-  const contributions = getContributions();
+  const contributions = useQuery(api.contributions.list, {});
 
   return (
     <div className="space-y-8">
@@ -21,14 +22,20 @@ function ContributionsPage() {
       </div>
 
       <div className="space-y-3">
-        {contributions.length === 0 ? (
+        {contributions === undefined ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-24 animate-pulse rounded-lg bg-zinc-100" />
+            ))}
+          </div>
+        ) : contributions.length === 0 ? (
           <p className="py-8 text-center text-sm text-zinc-400">
             No contributions yet
           </p>
         ) : (
-          contributions.map((c, i) => (
+          contributions.map((c) => (
             <div
-              key={`${c.domain}-${c.filePath}-${i}`}
+              key={c._id}
               className="rounded-lg border border-zinc-200 bg-white p-4"
             >
               <div className="flex items-start justify-between">
@@ -47,7 +54,7 @@ function ContributionsPage() {
                       <FileText className="h-3 w-3" />
                       {c.filePath}
                     </span>
-                    <span className="font-mono">v{c.version}</span>
+                    <span className="font-mono">v{c.newVersion}</span>
                   </div>
                 </div>
                 <span className="shrink-0 text-xs text-zinc-400">
