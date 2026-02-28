@@ -41,8 +41,8 @@ export function FileTree({ files, selectedPath, onSelect }: FileTreeProps) {
       ))}
       {Object.entries(dirs).map(([dir, dirFiles]) => (
         <div key={dir} className="mt-3">
-          <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium uppercase tracking-wider text-zinc-400">
-            <Folder className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+            <Folder className="h-3 w-3" />
             {dir}
           </div>
           <div className="ml-2 space-y-0.5">
@@ -77,13 +77,13 @@ function FileItem({
   return (
     <button
       onClick={() => onSelect(file.path)}
-      className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+      className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
         selected
-          ? "bg-zinc-100 text-zinc-900 font-medium"
-          : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+          ? "bg-white text-zinc-900 font-medium shadow-sm"
+          : "text-zinc-500 hover:bg-white/60 hover:text-zinc-900"
       }`}
     >
-      <FileText className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+      <FileText className="h-3 w-3 shrink-0 text-zinc-400" />
       {fileName}
     </button>
   );

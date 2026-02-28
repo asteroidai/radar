@@ -2,7 +2,57 @@
 @import "highlight.js/styles/github-dark.min.css";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
+}
+
+/* ── Code block styling (Pierre-inspired) ── */
+
+.prose pre {
+  position: relative;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0 !important;
+  overflow: hidden;
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+.prose pre code {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  padding: 1rem 0;
+  overflow-x: auto;
+}
+
+.prose pre code .hljs-ln-numbers {
+  padding: 0 0.75rem 0 1rem;
+  color: rgba(255, 255, 255, 0.2);
+  text-align: right;
+  user-select: none;
+}
+
+.prose pre code .hljs-ln-code {
+  padding: 0 1.25rem 0 0;
+}
+
+.prose :not(pre) > code {
+  font-size: 0.85em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.375rem;
+  background: #f0f0f0;
+  color: #1a1a2e;
+  font-weight: 500;
+  border: 1px solid #e0e0e0;
+}
+
+/* ── Raw markdown view ── */
+
+.raw-markdown {
+  font-size: 13px;
+  line-height: 20px;
+  color: #e4e4e7;
+  white-space: pre-wrap;
+  word-break: break-word;
 }

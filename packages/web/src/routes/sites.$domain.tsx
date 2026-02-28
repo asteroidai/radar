@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Globe } from "lucide-react";
+import { ArrowLeft, Globe, FileText } from "lucide-react";
 import { getSiteByDomain, getFilesBySite, getFile } from "@/lib/mock-data";
 import { FileTree } from "@/components/FileTree";
 import { MarkdownViewer } from "@/components/MarkdownViewer";
@@ -31,28 +31,31 @@ function SiteDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-5">
+      {/* Compact header */}
+      <div className="flex items-center gap-4">
         <Link
           to="/"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-400 transition-colors hover:text-zinc-600"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back
+          <ArrowLeft className="h-4 w-4" />
         </Link>
-        <div className="flex items-start gap-3">
-          <Globe className="mt-1 h-5 w-5 text-zinc-400" />
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100">
+            <Globe className="h-4 w-4 text-zinc-500" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900">{site.name}</h1>
-            <p className="mt-0.5 text-sm text-zinc-400">{site.domain}</p>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-              {site.description}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-semibold text-zinc-900">
+                {site.name}
+              </h1>
+              <span className="text-xs text-zinc-400">{site.domain}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
               {site.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-500"
+                  className="text-[11px] text-zinc-400"
                 >
                   {tag}
                 </span>
@@ -60,17 +63,28 @@ function SiteDetailPage() {
             </div>
           </div>
         </div>
+        <div className="ml-auto flex items-center gap-1 text-xs text-zinc-400">
+          <FileText className="h-3 w-3" />
+          {files.length} files
+        </div>
       </div>
 
-      <div className="flex gap-6">
-        <div className="w-60 shrink-0 rounded-lg border border-zinc-200 bg-white p-3">
+      {/* Two-column layout */}
+      <div className="flex gap-0 overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        {/* File tree sidebar */}
+        <div className="w-56 shrink-0 border-r border-zinc-100 bg-zinc-50/50 p-3">
+          <div className="mb-2 px-2 text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+            Files
+          </div>
           <FileTree
             files={files}
             selectedPath={selectedPath}
             onSelect={setSelectedPath}
           />
         </div>
-        <div className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white p-6">
+
+        {/* Content area */}
+        <div className="min-w-0 flex-1 p-6">
           <MarkdownViewer file={currentFile} />
         </div>
       </div>
