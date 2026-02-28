@@ -3,6 +3,7 @@ import { getSites } from "@/lib/mock-data";
 import { SearchBar } from "@/components/SearchBar";
 import { KnowledgeCard } from "@/components/KnowledgeCard";
 import { TerminalWidget } from "@/components/TerminalWidget";
+import { NvimExplorer } from "@/components/NvimExplorer";
 import PixelBlast from "@/components/PixelBlast";
 
 export const Route = createFileRoute("/")({
@@ -58,11 +59,12 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Terminal widget + site cards */}
-      <div className="mx-auto max-w-4xl space-y-16 px-4 pb-16">
+      {/* Terminal widget + explorer + site cards */}
+      <div className="mx-auto max-w-6xl space-y-16 px-4 pb-16">
         <div className="flex justify-center">
           <TerminalWidget />
         </div>
+        <NvimExplorer />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {sites.map((site) => (
             <KnowledgeCard key={site.domain} site={site} />
