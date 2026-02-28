@@ -1,1 +1,8 @@
 @import "tailwindcss";
+@import "highlight.js/styles/github-dark.min.css";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+}
