@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      convex:
+        specifier: ^1.32.0
+        version: 1.32.0(react@19.2.4)
       prettier:
         specifier: ^3.7.4
         version: 3.8.1
