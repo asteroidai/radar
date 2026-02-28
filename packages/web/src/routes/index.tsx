@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { getSites } from "@/lib/mock-data";
 import { SearchBar } from "@/components/SearchBar";
 import { KnowledgeCard } from "@/components/KnowledgeCard";
@@ -64,7 +64,9 @@ function HomePage() {
         <div className="flex justify-center">
           <TerminalWidget />
         </div>
-        <NvimExplorer />
+        <Link to="/explore" className="block cursor-pointer transition-transform hover:scale-[1.005]">
+          <NvimExplorer />
+        </Link>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {sites.map((site) => (
             <KnowledgeCard key={site.domain} site={site} />

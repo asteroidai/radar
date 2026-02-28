@@ -79,7 +79,7 @@ function buildTree(sites: Site[]): TreeNode[] {
   });
 }
 
-export function NvimExplorer() {
+export function NvimExplorer({ fullScreen = false }: { fullScreen?: boolean }) {
   const sites = getSites();
   const tree = buildTree(sites);
 
@@ -195,15 +195,15 @@ export function NvimExplorer() {
 
   return (
     <div
-      className="overflow-hidden rounded-xl shadow-2xl"
+      className={fullScreen ? "flex h-full flex-col overflow-hidden" : "overflow-hidden rounded-xl shadow-2xl"}
       style={{
-        border: `1px solid ${C.surface0}`,
+        ...(!fullScreen && { border: `1px solid ${C.surface0}` }),
         fontFamily:
           "'JetBrains Mono', 'SF Mono', 'Cascadia Code', ui-monospace, monospace",
       }}
     >
-      {/* Title bar */}
-      <div
+      {/* Title bar — hidden in full-screen (explore page has its own back button) */}
+      {!fullScreen && <div
         className="flex items-center justify-between px-4 py-2"
         style={{ backgroundColor: C.crust, borderBottom: `1px solid ${C.surface0}` }}
       >
@@ -231,10 +231,10 @@ export function NvimExplorer() {
             {currentFile.domain}/{currentFile.path}
           </span>
         )}
-      </div>
+      </div>}
 
       {/* Main content */}
-      <div className="flex" style={{ backgroundColor: C.base, height: "720px" }}>
+      <div className={fullScreen ? "flex flex-1 overflow-hidden" : "flex"} style={{ backgroundColor: C.base, ...(!fullScreen && { height: "720px" }) }}>
         {/* File tree (NERDTree style) */}
         <div
           className="shrink-0 overflow-y-auto"

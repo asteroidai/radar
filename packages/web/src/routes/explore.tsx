@@ -1,59 +1,29 @@
-import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Compass } from "lucide-react";
-import { getExplorations } from "@/lib/mock-data";
-import { ScanProgress } from "@/components/ScanProgress";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { NvimExplorer } from "@/components/NvimExplorer";
+import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/explore")({
   component: ExplorePage,
 });
 
 function ExplorePage() {
-  const [url, setUrl] = useState("");
-  const explorations = getExplorations();
+  const navigate = useNavigate();
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-900">Explore</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Send an agent to explore a website and generate knowledge files.
-        </p>
-      </div>
-
-      <div className="flex gap-3">
-        <input
-          type="text"
-          placeholder="Enter a URL to explore..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-emerald-500"
-        />
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#1e1e2e]">
+      {/* Back button bar */}
+      <div className="flex items-center gap-2 px-3 py-1.5">
         <button
-          disabled
-          className="flex items-center gap-2 rounded-lg bg-zinc-100 px-5 py-2.5 text-sm font-medium text-zinc-400 cursor-not-allowed"
+          onClick={() => navigate({ to: "/" })}
+          className="flex items-center gap-1.5 rounded px-2 py-1 text-[12px] text-[#a6adc8] transition-colors hover:bg-[#313244] hover:text-[#cdd6f4]"
         >
-          <Compass className="h-4 w-4" />
-          Explore
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back
         </button>
       </div>
-
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-zinc-400">
-          Recent Explorations
-        </h2>
-        {explorations.length === 0 ? (
-          <p className="py-8 text-center text-sm text-zinc-400">
-            No explorations yet
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {explorations.map((e) => (
-              <ScanProgress key={e.domain} exploration={e} />
-            ))}
-          </div>
-        )}
-      </section>
+      <div className="flex-1 overflow-hidden">
+        <NvimExplorer fullScreen />
+      </div>
     </div>
   );
 }
