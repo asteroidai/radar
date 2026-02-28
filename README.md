@@ -37,6 +37,7 @@ cd packages/explorer && pnpm start https://example.com
 - **Tailwind CSS + shadcn/ui** -- styling
 - **Cloudflare Pages** -- frontend deployment (free, static)
 - **@modelcontextprotocol/sdk + zod** -- MCP server
+- **zod-matter** -- Zod-validated YAML frontmatter parsing (wraps gray-matter + zod)
 - **Vercel V0** -- rapid UI component generation ($50 credit, sponsor)
 - **Anthropic Claude** -- LLM for knowledge synthesis
 - **TypeScript** throughout
@@ -106,7 +107,6 @@ radar/
           KnowledgeCard.tsx
           SearchBar.tsx
         lib/
-          urls.ts                 # URL normalization (shared)
       vite.config.ts
       tailwind.config.ts
       package.json
@@ -128,6 +128,11 @@ radar/
         strategy.ts               # Exploration strategy (navigate, catalog)
         synthesizer.ts            # LLM synthesis -> structured markdown
         submit.ts                 # Auto-submit findings to Convex
+      package.json
+    shared/                       # Shared schemas + utilities
+      schemas/
+        frontmatter.ts            # Zod schema for knowledge file frontmatter
+      urls.ts                     # URL normalization
       package.json
     cli/                          # CLI tool (stretch goal)
       src/
@@ -165,17 +170,44 @@ export default defineSchema({
     }),
 
   files: defineTable({
-    siteId: v.id("sites"),          // Reference to parent site
-    domain: v.string(),             // Denormalized for queries
-    path: v.string(),               // "navigation/checkout.md"
-    title: v.string(),              // "Checkout Flow"
-    content: v.string(),            // Full markdown body
-    version: v.number(),            // Incremented on each edit
-    lastContributor: v.string(),    // Who last edited
-    lastChangeReason: v.string(),   // Why they changed it
+    // Identity
+    siteId: v.id("sites"),
+    domain: v.string(),
+    path: v.string(),               // "flows/checkout"
+
+    // Frontmatter fields (structured, queryable)
+    title: v.string(),
+    summary: v.string(),
+    tags: v.array(v.string()),
+    entities: v.object({
+      primary: v.string(),
+      disambiguation: v.string(),
+      relatedConcepts: v.array(v.string()),
+    }),
+    intent: v.object({
+      coreQuestion: v.string(),
+      audience: v.union(
+        v.literal("browser-agent"),
+        v.literal("coding-agent"),
+        v.literal("human"),
+        v.literal("any"),
+      ),
+    }),
+    confidence: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    requiresAuth: v.boolean(),
+    selectorsCount: v.optional(v.number()),
+    relatedFiles: v.array(v.string()),
+    version: v.number(),
+    lastUpdated: v.number(),
+    lastContributor: v.string(),
+    lastChangeReason: v.string(),
+
+    // Body (markdown without frontmatter)
+    content: v.string(),
   })
     .index("by_site", ["siteId"])
     .index("by_domain_path", ["domain", "path"])
+    .index("by_confidence", ["domain", "confidence"])
     .searchIndex("search_content", {
       searchField: "content",
       filterFields: ["domain"],
@@ -232,7 +264,7 @@ When the explorer scans a site, it generates this structure (stored as individua
 
 ```
 amazon.com/
-  README.md              -- Overview, purpose, key URLs
+  README.md              -- Overview, purpose, key URLs (llms.txt format)
   navigation/
     sitemap.md           -- Key pages and their URLs
     main-nav.md          -- Main navigation structure
@@ -248,15 +280,156 @@ amazon.com/
 
 ---
 
+## Knowledge File Format (Semantic Frontmatter)
+
+Every knowledge file uses YAML frontmatter following the Markdown-First Semantics methodology. The frontmatter is the "control plane" for agents -- an agent reads frontmatter first to decide whether it needs the full body content. Frontmatter fields are stored as structured Convex columns (not embedded in the markdown string), and reconstructed into full markdown when served via MCP.
+
+### Zod Schema (`packages/shared/schemas/frontmatter.ts`)
+
+This is the single source of truth for the frontmatter format. Used by the explorer (when generating files), MCP server (when accepting submissions), and Convex mutations (on every write).
+
+```typescript
+import { z } from "zod";
+
+export const knowledgeFrontmatterSchema = z.object({
+  title: z.string(),
+  domain: z.string(),
+  path: z.string(),
+  summary: z.string().max(300),
+  tags: z.array(z.string()),
+  entities: z.object({
+    primary: z.string(),
+    disambiguation: z.string(),
+    related_concepts: z.array(z.string()),
+  }),
+  intent: z.object({
+    core_question: z.string(),
+    audience: z.enum(["browser-agent", "coding-agent", "human", "any"]),
+  }),
+  confidence: z.enum(["low", "medium", "high"]),
+  requires_auth: z.boolean(),
+  selectors_count: z.number().int().nonneg().optional(),
+  related_files: z.array(z.string()).default([]),
+  version: z.number().int().positive(),
+  last_updated: z.string().datetime(),
+  last_contributor: z.string(),
+  last_change_reason: z.string(),
+});
+
+export type KnowledgeFrontmatter = z.infer<typeof knowledgeFrontmatterSchema>;
+```
+
+### Validation with zod-matter
+
+When an agent submits markdown via MCP or CLI, the full file (frontmatter + body) is parsed and validated:
+
+```typescript
+import { parse } from "zod-matter";
+import { knowledgeFrontmatterSchema } from "../shared/schemas/frontmatter";
+
+function validateKnowledgeFile(markdown: string) {
+  const { data, content } = parse(markdown, knowledgeFrontmatterSchema);
+  // data is fully typed KnowledgeFrontmatter
+  // content is the markdown body without frontmatter
+  return { frontmatter: data, body: content };
+}
+```
+
+If frontmatter is missing or invalid, `zod-matter` throws a `ZodError` with specific field-level messages. The MCP server returns these as tool errors so the agent can fix and retry.
+
+### Example: Per-File Knowledge File
+
+```markdown
+---
+title: "Checkout Flow"
+domain: "amazon.com"
+path: "flows/checkout"
+summary: "4-step checkout: cart review -> shipping -> payment -> confirmation. Requires login. Key selectors for each form field included."
+tags: ["checkout", "forms", "payment", "purchase"]
+entities:
+  primary: "E-commerce checkout"
+  disambiguation: "Multi-step purchase flow from cart to order confirmation, not cart management or browsing."
+  related_concepts: ["payment processing", "address forms", "cart", "order confirmation"]
+intent:
+  core_question: "How do I automate the checkout flow on amazon.com?"
+  audience: "browser-agent"
+confidence: "high"
+requires_auth: true
+selectors_count: 14
+related_files:
+  - "flows/login"
+  - "elements/selectors"
+  - "navigation/main-nav"
+version: 3
+last_updated: "2026-02-28T10:00:00Z"
+last_contributor: "explorer-agent-1"
+last_change_reason: "Added new payment method selectors after site redesign"
+---
+
+# Checkout Flow
+
+## Prerequisites
+- Must be logged in (see [flows/login](flows/login))
+- At least one item in cart
+
+## Steps
+
+### Step 1: Cart Review
+URL: `https://amazon.com/gp/cart/view.html`
+...
+
+### Step 2: Shipping Address
+...
+```
+
+### Example: Per-Site README.md (llms.txt Format)
+
+The `README.md` for each site follows the [llms.txt](https://llmstxt.org/) structure -- an agent reads this first to understand what knowledge is available and navigate to specific files.
+
+```markdown
+# Amazon (amazon.com)
+
+> E-commerce marketplace. Product search, checkout, account management, order tracking. High complexity, auth required for purchases.
+
+Amazon.com is a large e-commerce platform with dynamic page content, anti-bot protections, and frequent A/B testing of UI elements. Agents should expect selectors to change periodically.
+
+## Navigation
+- [Sitemap](navigation/sitemap): Key pages and their URLs
+- [Main Navigation](navigation/main-nav): Header nav structure, category menus
+
+## Flows
+- [Search](flows/search): Product search, filters, sorting, pagination
+- [Checkout](flows/checkout): 4-step purchase flow with form selectors
+- [Login](flows/login): Authentication methods and session handling
+
+## Elements
+- [Selectors](elements/selectors): CSS selectors for common interactive elements
+
+## Gotchas & Tips
+- [Gotchas](gotchas): CAPTCHAs, rate limits, dynamic IDs, A/B tests
+- [Tips](tips): Agent shortcuts -- direct URLs, URL parameters, API patterns
+```
+
+### How Frontmatter Flows Through the System
+
+1. **Explorer generates** -- the LLM synthesizer produces full markdown files with frontmatter matching the Zod schema
+2. **Submission validates** -- `zod-matter` parses and validates the frontmatter on every write (MCP `radar_submit`, Convex mutation)
+3. **Convex stores** -- frontmatter fields are stored as individual Convex columns (queryable, filterable); body is stored separately in `content`
+4. **Listing returns frontmatter only** -- `radar_list_files` and `radar_get_context` return frontmatter fields without the full body, so agents can triage
+5. **Reading reconstructs** -- `radar_get_file` reconstructs the full markdown (frontmatter + body) for the agent to consume
+6. **Web UI renders both** -- file tree shows titles/summaries from frontmatter; detail view renders the full markdown body
+
+---
+
 ## MCP Server -- 6 Tools
 
 | Tool | Input | Behavior |
 |------|-------|----------|
-| `radar_get_context` | `domain: string` | Returns all files for a site (full context pack) |
-| `radar_get_file` | `domain: string, path: string` | Returns a specific knowledge file |
-| `radar_search` | `query: string, domain?: string` | Full-text search across all knowledge |
-| `radar_list_files` | `domain: string, glob?: string` | List available files for a site with optional pattern |
-| `radar_submit` | `domain, path, content, contributor, reason` | Submit/update a knowledge file (auto-approved, versioned) |
+| `radar_get_context` | `domain: string` | Returns the site README (llms.txt) + frontmatter summaries for all files (no bodies). Agent triages from here. |
+| `radar_get_file` | `domain: string, path: string` | Returns full reconstructed markdown (frontmatter + body) for a specific file |
+| `radar_search` | `query: string, domain?: string` | Full-text search across content; returns matching file frontmatter + relevant body snippets |
+| `radar_list_files` | `domain: string, glob?: string` | List files with frontmatter only (title, summary, tags, confidence) -- no body content |
+| `radar_submit` | `domain, path, content, contributor, reason` | Submit full markdown with frontmatter. Validated via zod-matter before storage. Auto-approved, versioned. |
 | `radar_explore` | `url: string` | Trigger a Browser Use exploration of a new site |
 
 **Transport:** stdio for local use (Claude Code, Cursor), streamable HTTP for remote.
@@ -330,7 +503,7 @@ Deployed to **Cloudflare Pages** (`pnpm build && wrangler pages deploy dist`).
 ## URL Normalization (shared utility)
 
 ```typescript
-// packages/web/src/lib/urls.ts (imported by all packages)
+// packages/shared/urls.ts (imported by all packages)
 export function normalizeUrl(rawUrl: string): { domain: string; path: string; url: string } {
   if (!rawUrl.includes("://")) rawUrl = `https://${rawUrl}`;
   const parsed = new URL(rawUrl);
