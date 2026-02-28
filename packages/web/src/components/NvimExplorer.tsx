@@ -234,12 +234,12 @@ export function NvimExplorer() {
       </div>
 
       {/* Main content */}
-      <div className="flex" style={{ backgroundColor: C.base, height: "480px" }}>
+      <div className="flex" style={{ backgroundColor: C.base, height: "720px" }}>
         {/* File tree (NERDTree style) */}
         <div
           className="shrink-0 overflow-y-auto"
           style={{
-            width: "240px",
+            width: "280px",
             backgroundColor: C.mantle,
             borderRight: `1px solid ${C.surface0}`,
           }}

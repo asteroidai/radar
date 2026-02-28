@@ -60,7 +60,7 @@ function HomePage() {
       </div>
 
       {/* Terminal widget + explorer + site cards */}
-      <div className="mx-auto max-w-6xl space-y-16 px-4 pb-16">
+      <div className="mx-auto max-w-7xl space-y-16 px-4 pb-16">
         <div className="flex justify-center">
           <TerminalWidget />
         </div>
