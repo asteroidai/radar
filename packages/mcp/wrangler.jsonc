@@ -1,0 +1,13 @@
+{
+  "name": "radar-mcp",
+  "main": "dist/http.js",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "mcp.radar.asteroid.ai", "zone_name": "asteroid.ai" }
+  ],
+  "vars": {
+    "CONVEX_URL": "https://tough-bird-920.convex.cloud"
+  }
+}

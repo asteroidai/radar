@@ -4,18 +4,28 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -b",
-    "dev": "tsc -b --watch",
-    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/stdio.js",
+    "start:http": "node dist/http-dev.js",
+    "deploy": "wrangler deploy",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@hono/mcp": "^0.2.4",
+    "@hono/node-server": "^1.19.9",
     "@modelcontextprotocol/sdk": "^1.9.0",
     "convex": "^1.21.0",
-    "zod": "^3.24.0"
+    "gray-matter": "^4.0.3",
+    "hono": "^4.12.3",
+    "minimatch": "^10.2.4",
+    "zod": "^3.24.0",
+    "zod-matter": "^0.1.3"
   },
   "devDependencies": {
     "@radar/typescript-config": "workspace:*",
-    "typescript": "5.9.2"
+    "@types/node": "^25.3.3",
+    "typescript": "5.9.2",
+    "wrangler": "^4.69.0"
   }
 }

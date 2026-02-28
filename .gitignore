@@ -20,6 +20,12 @@ coverage
 dist
 build
 out
+*.tsbuildinfo
+
+# tsc emits these when MCP package compiles (convex source is outside rootDir)
+convex/*.js
+convex/*.d.ts
+convex/*.d.ts.map
 
 # TypeScript build artifacts
 *.tsbuildinfo

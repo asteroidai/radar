@@ -1,8 +1,10 @@
 {
   "extends": "@radar/typescript-config/node.json",
   "compilerOptions": {
+    "composite": false,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "types": ["node"]
   },
   "include": ["src", "../../convex/_generated"]
 }
