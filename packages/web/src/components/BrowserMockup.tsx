@@ -123,7 +123,7 @@ function CheckoutPhase() {
 function SkipPhase() {
   return (
     <svg viewBox="0 0 400 300" className="h-full w-full">
-      {/* Step indicator — steps 1-3 dim, step 4 emerald */}
+      {/* Step indicator — steps 1-3 dim with strikethrough, step 4 emerald */}
       {[0, 1, 2, 3].map((i) => (
         <g key={i} opacity={i < 3 ? 0.35 : 1}>
           <circle
@@ -157,50 +157,40 @@ function SkipPhase() {
         </g>
       ))}
 
+      {/* Strikethrough lines on steps 1-3 */}
+      {[0, 1, 2].map((i) => (
+        <line
+          key={i}
+          x1={68 + i * 80}
+          y1="40"
+          x2={92 + i * 80}
+          y2="20"
+          stroke="#ef4444"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0"
+        >
+          <animate
+            attributeName="opacity"
+            from="0"
+            to="0.7"
+            dur="0.3s"
+            begin={`${i * 0.15}s`}
+            fill="freeze"
+          />
+        </line>
+      ))}
+
       {/* Step labels */}
       <text x="80" y="54" textAnchor="middle" fill="#52525b" fontSize="9" opacity="0.35">Info</text>
       <text x="160" y="54" textAnchor="middle" fill="#52525b" fontSize="9" opacity="0.35">Shipping</text>
       <text x="240" y="54" textAnchor="middle" fill="#52525b" fontSize="9" opacity="0.35">Review</text>
       <text x="320" y="54" textAnchor="middle" fill="#a1a1aa" fontSize="9">Payment</text>
 
-      {/* Skip arrow — curves from step 1 to step 4 */}
-      <path
-        d="M 80 18 C 80 -15, 320 -15, 320 18"
-        fill="none"
-        stroke="#10b981"
-        strokeWidth="2"
-        strokeDasharray="200"
-        strokeDashoffset="200"
-        strokeLinecap="round"
-      >
-        <animate
-          attributeName="stroke-dashoffset"
-          from="200"
-          to="0"
-          dur="0.8s"
-          fill="freeze"
-        />
-      </path>
-      {/* Arrow head */}
-      <polygon
-        points="314,14 326,18 320,7"
-        fill="#10b981"
-        opacity="0"
-      >
-        <animate
-          attributeName="opacity"
-          from="0"
-          to="1"
-          dur="0.2s"
-          begin="0.7s"
-          fill="freeze"
-        />
-      </polygon>
-
       {/* Skip label */}
-      <text x="200" y="78" textAnchor="middle" fill="#10b981" fontSize="10" fontWeight="500" opacity="0">
-        skipped via radar tip
-        <animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="0.6s" fill="freeze" />
+      <text x="160" y="74" textAnchor="middle" fill="#10b981" fontSize="10" fontWeight="500" opacity="0">
+        skipped via radar
+        <animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="0.4s" fill="freeze" />
       </text>
 
       {/* Single payment field */}
