@@ -17,7 +17,7 @@
 
 ## Convex
 
-- Convex deployment: `fantastic-oriole-177`
+- Convex deployment: `tough-bird-920`
 - Frontend env var: `VITE_CONVEX_URL` in `packages/web/.env.local`
 - Run `npx convex dev` from repo root (requires interactive login)
 - If compiled `.js`/`.d.ts` artifacts appear in `convex/`, delete them — they conflict with the `.ts` source files
