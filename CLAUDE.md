@@ -12,8 +12,7 @@
 - `packages/web/` — Frontend (Vite + React 19 + TanStack Router + Tailwind v4)
 - `packages/mcp/` — MCP server (Cloudflare Workers)
 - `packages/cli/` — CLI tool
-- `packages/explorer/` — Explorer agent
-- `convex/` — Convex backend (schema, queries, mutations)
+- `convex/` — Convex backend (schema, queries, mutations, explorer action)
 
 ## Convex
 

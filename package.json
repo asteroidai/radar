@@ -8,6 +8,9 @@
     "check-types": "turbo run check-types",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
+  "dependencies": {
+    "browser-use-sdk": "^3.1.0"
+  },
   "devDependencies": {
     "convex": "^1.32.0",
     "prettier": "^3.7.4",

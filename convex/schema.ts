@@ -112,6 +112,7 @@ export default defineSchema({
   explorations: defineTable({
     domain: v.string(),
     url: v.string(),
+    instructions: v.optional(v.string()),
     status: v.union(
       v.literal("queued"),
       v.literal("running"),

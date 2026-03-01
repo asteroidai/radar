@@ -1,6 +1,8 @@
 import { formatDistanceToNow } from "date-fns";
 import { FileText } from "lucide-react";
-import type { Exploration } from "@/lib/mock-data";
+import type { Doc } from "../../../../convex/_generated/dataModel";
+
+type Exploration = Doc<"explorations">;
 
 const statusStyles: Record<
   Exploration["status"],
@@ -30,7 +32,7 @@ export function ScanProgress({ exploration }: { exploration: Exploration }) {
       </div>
       <div className="flex items-center gap-1 text-sm text-zinc-400">
         <FileText className="h-3.5 w-3.5" />
-        {exploration.filesGenerated} files
+        {exploration.filesGenerated ?? 0} files
       </div>
     </div>
   );
