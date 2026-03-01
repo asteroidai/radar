@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { FileText, Folder } from "lucide-react";
+import { FileText, Folder, Globe } from "lucide-react";
 import { MarkdownViewer } from "./MarkdownViewer";
 
 export interface TreeNode {
@@ -149,18 +149,40 @@ export function NvimExplorer({ domain, fullScreen = false }: Props) {
       selectedFile?.domain === node.domain &&
       selectedFile?.path === node.filePath;
 
+    // Top-level domain node in multi-domain mode
+    const isDomainRoot = !domain && depth === 0 && hasChildren;
+
     if (hasChildren && !isFile) {
       return (
         <div key={key}>
-          <button
-            onClick={() => toggle(depth === 0 ? node.name : key)}
-            className="flex w-full items-center gap-1.5 px-2 py-1 text-left text-[11px] font-medium uppercase tracking-wider text-zinc-400 hover:text-zinc-600"
-            style={{ paddingLeft: `${depth * 12 + 8}px` }}
-          >
-            <span className="text-[10px]">{isExpanded ? "▾" : "▸"}</span>
-            <Folder className="h-3 w-3" />
-            {node.name}
-          </button>
+          {isDomainRoot ? (
+            <button
+              onClick={() => toggle(node.name)}
+              className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition-colors ${
+                isExpanded
+                  ? "bg-white text-zinc-900 shadow-sm"
+                  : "text-zinc-600 hover:bg-white/60 hover:text-zinc-900"
+              } ${key !== `/${tree[0]?.name}` ? "mt-2" : ""}`}
+            >
+              <Globe className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+              <span className="truncate font-serif text-xs font-semibold">
+                {node.name}
+              </span>
+              <span className="ml-auto text-[10px] text-zinc-300">
+                {isExpanded ? "▾" : "▸"}
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => toggle(key)}
+              className="flex w-full items-center gap-1.5 px-2 py-1 text-left text-[11px] font-medium uppercase tracking-wider text-zinc-400 hover:text-zinc-600"
+              style={{ paddingLeft: `${depth * 12 + 8}px` }}
+            >
+              <span className="text-[10px]">{isExpanded ? "▾" : "▸"}</span>
+              <Folder className="h-3 w-3" />
+              {node.name}
+            </button>
+          )}
           {isExpanded && (
             <div>
               {node.children!.map((child) =>
