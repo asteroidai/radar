@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "check-types": "tsc --noEmit",
     "preview": "vite preview",
     "deploy": "VITE_CONVEX_URL=https://fine-vole-489.convex.cloud pnpm build && CLOUDFLARE_ACCOUNT_ID=315c0616f903abb5733771f2ebfa40cf wrangler pages deploy --branch main --commit-dirty=true"
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@radar/typescript-config": "workspace:*",
     "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^25.3.3",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.183.1",

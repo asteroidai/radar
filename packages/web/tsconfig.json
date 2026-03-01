@@ -1,10 +1,9 @@
 {
   "extends": "@radar/typescript-config/react-library.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
