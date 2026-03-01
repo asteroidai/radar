@@ -23,4 +23,5 @@ jobs:
       - name: Deploy
         run: pnpm --filter @radar/web run deploy
         env:
+          VITE_CONVEX_URL: https://fantastic-oriole-177.convex.cloud
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
