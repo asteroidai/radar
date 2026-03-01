@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { formatDistanceToNow } from "date-fns";
@@ -110,7 +110,7 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
   const showLive = isRunning && !!exploration.liveUrl;
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-sm">
+    <Link to="/sites/$domain" params={{ domain: exploration.domain }} className="block rounded-lg border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
@@ -137,21 +137,25 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
         {/* Thumbnail preview (small, right-aligned) or replay link */}
         <div className="flex shrink-0 items-center">
           {showLive && !expanded && (
-            <LivePreview
-              liveUrl={exploration.liveUrl!}
-              expanded={false}
-              onToggle={() => setExpanded(true)}
-            />
+            <div onClick={(e) => e.preventDefault()}>
+              <LivePreview
+                liveUrl={exploration.liveUrl!}
+                expanded={false}
+                onToggle={() => setExpanded(true)}
+              />
+            </div>
           )}
           {isDone && exploration.sessionId && (
-            <ReplayLink sessionId={exploration.sessionId} />
+            <div onClick={(e) => e.preventDefault()}>
+              <ReplayLink sessionId={exploration.sessionId} />
+            </div>
           )}
         </div>
       </div>
 
       {/* Expanded preview (full width, below the header) */}
       {showLive && expanded && (
-        <div className="mt-3">
+        <div className="mt-3" onClick={(e) => e.preventDefault()}>
           <LivePreview
             liveUrl={exploration.liveUrl!}
             expanded={true}
@@ -186,7 +190,7 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
           <CompactFileTree domain={exploration.domain} />
         </div>
       )}
-    </div>
+    </Link>
   );
 }
 

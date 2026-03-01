@@ -5,6 +5,12 @@
   --font-sans: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  --animate-blink: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 /* ── Code block styling (Pierre-inspired) ── */
