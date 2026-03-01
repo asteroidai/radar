@@ -1,99 +1,90 @@
 import { useState, useEffect } from "react";
-import Markdown from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
-import remarkGfm from "remark-gfm";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-
-// Catppuccin Mocha palette
-const C = {
-  base: "#1e1e2e",
-  mantle: "#181825",
-  crust: "#11111b",
-  surface0: "#313244",
-  surface1: "#45475a",
-  surface2: "#585b70",
-  overlay0: "#6c7086",
-  text: "#cdd6f4",
-  subtext0: "#a6adc8",
-  subtext1: "#bac2de",
-  green: "#a6e3a1",
-  blue: "#89b4fa",
-  yellow: "#f9e2af",
-  lavender: "#b4befe",
-  peach: "#fab387",
-  mauve: "#cba6f7",
-  red: "#f38ba8",
-  teal: "#94e2d5",
-};
-
-interface FileRef {
-  domain: string;
-  path: string;
-  version: number;
-  lastContributor: string;
-}
+import { FileText, Folder } from "lucide-react";
+import { MarkdownViewer } from "./MarkdownViewer";
 
 interface TreeNode {
   name: string;
   domain?: string;
-  file?: FileRef;
+  filePath?: string;
   children?: TreeNode[];
 }
 
-function buildTree(
-  sites: { domain: string }[],
-  allFiles: { domain: string; path: string; version: number; lastContributor: string }[],
+function buildFileNodes(
+  domain: string,
+  files: { path: string }[],
 ): TreeNode[] {
-  // Group files by domain
+  const dirs: Record<string, typeof files> = {};
+  const rootFiles: typeof files = [];
+
+  for (const f of files) {
+    const slash = f.path.indexOf("/");
+    if (slash === -1) {
+      rootFiles.push(f);
+    } else {
+      const dir = f.path.slice(0, slash);
+      (dirs[dir] ??= []).push(f);
+    }
+  }
+
+  const children: TreeNode[] = [];
+  for (const f of rootFiles) {
+    children.push({ name: f.path, domain, filePath: f.path });
+  }
+  for (const [dir, dirFiles] of Object.entries(dirs)) {
+    children.push({
+      name: dir,
+      children: dirFiles.map((f) => ({
+        name: f.path.split("/").pop()!,
+        domain,
+        filePath: f.path,
+      })),
+    });
+  }
+  return children;
+}
+
+function buildMultiDomainTree(
+  sites: { domain: string }[],
+  allFiles: { domain: string; path: string }[],
+): TreeNode[] {
   const filesByDomain: Record<string, typeof allFiles> = {};
   for (const f of allFiles) {
     (filesByDomain[f.domain] ??= []).push(f);
   }
 
-  return sites.map((site) => {
-    const files = filesByDomain[site.domain] ?? [];
-    const dirs: Record<string, typeof files> = {};
-    const rootFiles: typeof files = [];
-
-    for (const f of files) {
-      const slash = f.path.indexOf("/");
-      if (slash === -1) {
-        rootFiles.push(f);
-      } else {
-        const dir = f.path.slice(0, slash);
-        (dirs[dir] ??= []).push(f);
-      }
-    }
-
-    const children: TreeNode[] = [];
-    for (const f of rootFiles) {
-      children.push({ name: f.path, domain: site.domain, file: f });
-    }
-    for (const [dir, dirFiles] of Object.entries(dirs)) {
-      children.push({
-        name: dir,
-        children: dirFiles.map((f) => ({
-          name: f.path.split("/").pop()!,
-          domain: site.domain,
-          file: f,
-        })),
-      });
-    }
-
-    return {
-      name: site.domain,
-      domain: site.domain,
-      children,
-    };
-  });
+  return sites.map((site) => ({
+    name: site.domain,
+    domain: site.domain,
+    children: buildFileNodes(
+      site.domain,
+      filesByDomain[site.domain] ?? [],
+    ),
+  }));
 }
 
-export function NvimExplorer({ fullScreen = false }: { fullScreen?: boolean }) {
-  const sites = useQuery(api.sites.list);
-  const allFiles = useQuery(api.files.listAll);
+interface Props {
+  domain?: string;
+  fullScreen?: boolean;
+}
 
-  const tree = sites && allFiles ? buildTree(sites, allFiles) : [];
+export function NvimExplorer({ domain, fullScreen = false }: Props) {
+  // Multi-domain queries (skipped in single-domain mode)
+  const sites = useQuery(api.sites.list, domain ? "skip" : undefined);
+  const allFiles = useQuery(api.files.listAll, domain ? "skip" : undefined);
+
+  // Single-domain query (skipped in multi-domain mode)
+  const domainFiles = useQuery(
+    api.files.listByDomain,
+    domain ? { domain } : "skip",
+  );
+
+  const tree = domain
+    ? buildFileNodes(domain, domainFiles ?? [])
+    : sites && allFiles
+      ? buildMultiDomainTree(sites, allFiles)
+      : [];
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedFile, setSelectedFile] = useState<{
@@ -101,22 +92,42 @@ export function NvimExplorer({ fullScreen = false }: { fullScreen?: boolean }) {
     path: string;
   } | null>(null);
 
-  // Auto-select first file once data loads
   useEffect(() => {
-    if (sites && allFiles && !selectedFile && sites.length > 0) {
+    if (selectedFile) return;
+
+    if (domain) {
+      if (!domainFiles) return;
+      // Auto-expand all directories in single-domain mode
+      const dirNames = new Set<string>();
+      for (const f of domainFiles) {
+        const slash = f.path.indexOf("/");
+        if (slash !== -1) dirNames.add(f.path.slice(0, slash));
+      }
+      setExpanded(dirNames);
+
+      const readme =
+        domainFiles.find((f) => f.path === "README.md") ?? domainFiles[0];
+      if (readme) {
+        setSelectedFile({ domain, path: readme.path });
+      }
+    } else {
+      if (!sites || !allFiles || sites.length === 0) return;
       const firstDomain = sites[0]!.domain;
       setExpanded(new Set([firstDomain]));
-      const domainFiles = allFiles.filter((f) => f.domain === firstDomain);
-      const readme = domainFiles.find((f) => f.path === "README.md") ?? domainFiles[0];
+      const filtered = allFiles.filter((f) => f.domain === firstDomain);
+      const readme =
+        filtered.find((f) => f.path === "README.md") ?? filtered[0];
       if (readme) {
         setSelectedFile({ domain: firstDomain, path: readme.path });
       }
     }
-  }, [sites, allFiles, selectedFile]);
+  }, [domain, sites, allFiles, domainFiles, selectedFile]);
 
   const currentFile = useQuery(
     api.files.getByDomainPath,
-    selectedFile ? { domain: selectedFile.domain, path: selectedFile.path } : "skip",
+    selectedFile
+      ? { domain: selectedFile.domain, path: selectedFile.path }
+      : "skip",
   );
 
   function toggle(key: string) {
@@ -132,372 +143,80 @@ export function NvimExplorer({ fullScreen = false }: { fullScreen?: boolean }) {
     const key = `${keyPrefix}/${node.name}`;
     const hasChildren = node.children && node.children.length > 0;
     const isExpanded = expanded.has(node.name) || expanded.has(key);
-    const isFile = !!node.file;
+    const isFile = !!node.filePath;
     const isSelected =
       isFile &&
       selectedFile?.domain === node.domain &&
-      selectedFile?.path === node.file?.path;
+      selectedFile?.path === node.filePath;
+
+    if (hasChildren && !isFile) {
+      return (
+        <div key={key}>
+          <button
+            onClick={() => toggle(depth === 0 ? node.name : key)}
+            className="flex w-full items-center gap-1.5 px-2 py-1 text-left text-[11px] font-medium uppercase tracking-wider text-zinc-400 hover:text-zinc-600"
+            style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          >
+            <span className="text-[10px]">{isExpanded ? "▾" : "▸"}</span>
+            <Folder className="h-3 w-3" />
+            {node.name}
+          </button>
+          {isExpanded && (
+            <div>
+              {node.children!.map((child) =>
+                renderNode(child, depth + 1, key),
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
 
     return (
-      <div key={key}>
-        <button
-          onClick={() => {
-            if (hasChildren) {
-              toggle(depth === 0 ? node.name : key);
-            } else if (node.file && node.domain) {
-              setSelectedFile({ domain: node.domain, path: node.file.path });
-            }
-          }}
-          className="flex w-full items-center gap-0 text-left text-[13px] leading-[22px] transition-colors"
-          style={{
-            paddingLeft: `${depth * 16 + 12}px`,
-            paddingRight: "12px",
-            color: isSelected
-              ? C.text
-              : isFile
-                ? C.subtext0
-                : depth === 0
-                  ? C.blue
-                  : C.yellow,
-            backgroundColor: isSelected ? C.surface0 : "transparent",
-          }}
-          onMouseEnter={(e) => {
-            if (!isSelected)
-              e.currentTarget.style.backgroundColor = C.surface0 + "60";
-          }}
-          onMouseLeave={(e) => {
-            if (!isSelected)
-              e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          {hasChildren ? (
-            <span
-              style={{ color: C.overlay0, width: "16px", display: "inline-block", textAlign: "center" }}
-            >
-              {isExpanded ? "▾" : "▸"}
-            </span>
-          ) : (
-            <span style={{ width: "16px", display: "inline-block" }} />
-          )}
-          <span>
-            {hasChildren && !isFile ? (
-              <>
-                {depth === 0 ? "󰉋 " : "󰉖 "}
-                {node.name}
-                {depth === 0 && (
-                  <span style={{ color: C.overlay0 }}>/</span>
-                )}
-              </>
-            ) : (
-              <>
-                <span style={{ color: C.green }}>󰈙 </span>
-                {node.name}
-              </>
-            )}
-          </span>
-        </button>
-        {hasChildren && isExpanded && (
-          <div>
-            {node.children!.map((child) =>
-              renderNode(child, depth + 1, key),
-            )}
-          </div>
-        )}
-      </div>
+      <button
+        key={key}
+        onClick={() => {
+          if (node.filePath && node.domain) {
+            setSelectedFile({ domain: node.domain, path: node.filePath });
+          }
+        }}
+        className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+          isSelected
+            ? "bg-white text-zinc-900 font-medium shadow-sm"
+            : "text-zinc-500 hover:bg-white/60 hover:text-zinc-900"
+        }`}
+        style={{ paddingLeft: `${depth * 12 + 8}px` }}
+      >
+        <FileText className="h-3 w-3 shrink-0 text-zinc-400" />
+        {node.name}
+      </button>
     );
   }
 
-  const lineCount = currentFile
-    ? currentFile.content.split("\n").length
-    : 0;
+  const sidebarLabel = domain ? "Files" : "Explore Knowledge";
+  const height = fullScreen ? "100%" : "720px";
 
   return (
     <div
-      className={fullScreen ? "flex h-full flex-col overflow-hidden" : "overflow-hidden rounded-xl shadow-2xl"}
-      style={{
-        ...(!fullScreen && { border: `1px solid ${C.surface0}` }),
-        fontFamily:
-          "'JetBrains Mono', 'SF Mono', 'Cascadia Code', ui-monospace, monospace",
-      }}
+      className={`overflow-hidden rounded-xl border border-zinc-200 bg-white ${fullScreen ? "flex h-full flex-col" : ""}`}
     >
-      {/* Title bar — hidden in full-screen (explore page has its own back button) */}
-      {!fullScreen && <div
-        className="flex items-center justify-between px-4 py-2"
-        style={{ backgroundColor: C.crust, borderBottom: `1px solid ${C.surface0}` }}
+      <div
+        className={`flex ${fullScreen ? "flex-1 overflow-hidden" : ""}`}
+        style={{ height: fullScreen ? undefined : height }}
       >
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <span
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: C.red }}
-            />
-            <span
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: C.yellow }}
-            />
-            <span
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: C.green }}
-            />
+        {/* File tree sidebar */}
+        <div className="w-56 shrink-0 overflow-y-auto border-r border-zinc-100 bg-zinc-50/50 p-3">
+          <div className="mb-2 px-2 text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+            {sidebarLabel}
           </div>
-          <span className="ml-2 text-xs" style={{ color: C.overlay0 }}>
-            nvim — radar
-          </span>
-        </div>
-        {currentFile && (
-          <span className="text-xs" style={{ color: C.overlay0 }}>
-            {currentFile.domain}/{currentFile.path}
-          </span>
-        )}
-      </div>}
-
-      {/* Main content */}
-      <div className={fullScreen ? "flex flex-1 overflow-hidden" : "flex"} style={{ backgroundColor: C.base, ...(!fullScreen && { height: "720px" }) }}>
-        {/* File tree (NERDTree style) */}
-        <div
-          className="shrink-0 overflow-y-auto"
-          style={{
-            width: "280px",
-            backgroundColor: C.mantle,
-            borderRight: `1px solid ${C.surface0}`,
-          }}
-        >
-          {/* NERDTree header */}
-          <div
-            className="px-3 py-2 text-[11px] uppercase tracking-wider"
-            style={{ color: C.overlay0, borderBottom: `1px solid ${C.surface0}` }}
-          >
-            <span style={{ color: C.mauve }}>  </span>
-            explorer
-          </div>
-          <div className="py-1">
+          <div className="space-y-0.5">
             {tree.map((node) => renderNode(node, 0, ""))}
           </div>
         </div>
 
-        {/* Editor pane */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          {/* Tab bar */}
-          {currentFile && (
-            <div
-              className="flex items-center"
-              style={{
-                backgroundColor: C.mantle,
-                borderBottom: `1px solid ${C.surface0}`,
-              }}
-            >
-              <div
-                className="flex items-center gap-2 px-4 py-1.5 text-[12px]"
-                style={{
-                  backgroundColor: C.base,
-                  color: C.text,
-                  borderRight: `1px solid ${C.surface0}`,
-                }}
-              >
-                <span style={{ color: C.green }}>󰈙</span>
-                {currentFile.path}
-                <span style={{ color: C.surface2 }}>×</span>
-              </div>
-            </div>
-          )}
-
-          {/* Content area */}
-          <div className="flex-1 overflow-auto p-5">
-            {currentFile ? (
-              <article
-                className="prose max-w-none"
-                style={
-                  {
-                    "--tw-prose-body": C.subtext1,
-                    "--tw-prose-headings": C.text,
-                    "--tw-prose-links": C.blue,
-                    "--tw-prose-bold": C.text,
-                    "--tw-prose-code": C.peach,
-                    "--tw-prose-th-borders": C.surface1,
-                    "--tw-prose-td-borders": C.surface0,
-                  } as React.CSSProperties
-                }
-              >
-                <Markdown
-                  rehypePlugins={[rehypeHighlight]}
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    h1: ({ children }) => (
-                      <h1
-                        className="mb-3 mt-0 text-sm font-semibold"
-                        style={{ color: C.text }}
-                      >
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2
-                        className="mb-2 mt-5 text-sm font-semibold"
-                        style={{ color: C.lavender }}
-                      >
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3
-                        className="mb-2 mt-4 text-xs font-medium"
-                        style={{ color: C.mauve }}
-                      >
-                        {children}
-                      </h3>
-                    ),
-                    p: ({ children }) => (
-                      <p
-                        className="mb-3 text-[13px] leading-relaxed"
-                        style={{ color: C.subtext1 }}
-                      >
-                        {children}
-                      </p>
-                    ),
-                    li: ({ children }) => (
-                      <li
-                        className="text-[13px]"
-                        style={{ color: C.subtext1 }}
-                      >
-                        {children}
-                      </li>
-                    ),
-                    a: ({ children, href }) => (
-                      <a
-                        href={href}
-                        className="underline decoration-1 underline-offset-2"
-                        style={{ color: C.blue }}
-                      >
-                        {children}
-                      </a>
-                    ),
-                    strong: ({ children }) => (
-                      <strong style={{ color: C.text }}>
-                        {children}
-                      </strong>
-                    ),
-                    code: ({ className, children }) => {
-                      const isBlock = className?.includes("hljs");
-                      if (isBlock) {
-                        return (
-                          <code className={className}>{children}</code>
-                        );
-                      }
-                      return (
-                        <code
-                          className="rounded px-1.5 py-0.5 text-[12px]"
-                          style={{
-                            backgroundColor: C.surface0,
-                            color: C.peach,
-                          }}
-                        >
-                          {children}
-                        </code>
-                      );
-                    },
-                    pre: ({ children }) => (
-                      <pre
-                        className="my-3 overflow-x-auto rounded-lg p-4 text-[13px] leading-[20px]"
-                        style={{
-                          backgroundColor: C.crust,
-                          border: `1px solid ${C.surface0}`,
-                        }}
-                      >
-                        {children}
-                      </pre>
-                    ),
-                    table: ({ children }) => (
-                      <table
-                        className="my-3 w-full text-[13px]"
-                        style={{ color: C.subtext1 }}
-                      >
-                        {children}
-                      </table>
-                    ),
-                    th: ({ children }) => (
-                      <th
-                        className="border-b px-3 py-1.5 text-left text-xs font-medium"
-                        style={{
-                          borderColor: C.surface1,
-                          color: C.subtext0,
-                        }}
-                      >
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td
-                        className="border-b px-3 py-1.5"
-                        style={{ borderColor: C.surface0 }}
-                      >
-                        {children}
-                      </td>
-                    ),
-                    blockquote: ({ children }) => (
-                      <blockquote
-                        className="my-3 border-l-2 pl-4 text-[13px]"
-                        style={{
-                          borderColor: C.yellow,
-                          color: C.subtext0,
-                        }}
-                      >
-                        {children}
-                      </blockquote>
-                    ),
-                    hr: () => (
-                      <hr
-                        className="my-4"
-                        style={{ borderColor: C.surface0 }}
-                      />
-                    ),
-                  }}
-                >
-                  {currentFile.content}
-                </Markdown>
-              </article>
-            ) : (
-              <div
-                className="flex h-full items-center justify-center text-sm"
-                style={{ color: C.overlay0 }}
-              >
-                Select a file to view
-              </div>
-            )}
-          </div>
-
-          {/* Status bar (vim style) */}
-          {currentFile && (
-            <div
-              className="flex items-center justify-between px-3 py-1 text-[11px]"
-              style={{
-                backgroundColor: C.surface0,
-                color: C.subtext0,
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className="rounded px-1.5 py-0.5 font-semibold"
-                  style={{ backgroundColor: C.blue, color: C.crust }}
-                >
-                  NORMAL
-                </span>
-                <span>
-                  {currentFile.domain}/{currentFile.path}
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span>v{currentFile.version}</span>
-                <span style={{ color: C.green }}>
-                  {currentFile.lastContributor}
-                </span>
-                <span>
-                  {lineCount}L
-                </span>
-                <span>utf-8</span>
-                <span>markdown</span>
-              </div>
-            </div>
-          )}
+        {/* Content area */}
+        <div className="min-w-0 flex-1 overflow-auto p-6">
+          <MarkdownViewer file={currentFile ?? null} />
         </div>
       </div>
     </div>

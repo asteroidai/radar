@@ -85,10 +85,89 @@ export function MarkdownViewer({ file }: { file: FileData | null }) {
           </div>
         </div>
       ) : (
-        <article className="prose max-w-none prose-headings:text-zinc-900 prose-h1:text-sm prose-h1:font-semibold prose-h2:text-sm prose-h2:font-semibold prose-h3:text-xs prose-h3:font-medium prose-p:text-[13px] prose-p:leading-relaxed prose-p:text-zinc-600 prose-a:text-emerald-600 prose-strong:text-zinc-800 prose-code:text-[12px] prose-pre:bg-zinc-950 prose-pre:text-[13px] prose-li:text-[13px] prose-li:text-zinc-600 prose-th:text-xs prose-th:text-zinc-500 prose-td:text-[13px] prose-td:text-zinc-600 prose-blockquote:border-emerald-300 prose-blockquote:text-[13px] prose-blockquote:text-zinc-500 prose-hr:border-zinc-100">
+        <article className="max-w-none">
           <Markdown
             rehypePlugins={[rehypeHighlight]}
             remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ children }) => (
+                <h1 className="mb-3 mt-0 text-base font-semibold text-zinc-900">
+                  {children}
+                </h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className="mb-2 mt-6 text-sm font-semibold text-zinc-800">
+                  {children}
+                </h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className="mb-2 mt-4 text-xs font-medium text-zinc-700">
+                  {children}
+                </h3>
+              ),
+              p: ({ children }) => (
+                <p className="mb-3 text-[13px] leading-relaxed text-zinc-600">
+                  {children}
+                </p>
+              ),
+              li: ({ children }) => (
+                <li className="text-[13px] text-zinc-600">{children}</li>
+              ),
+              ul: ({ children }) => (
+                <ul className="mb-3 ml-4 list-disc space-y-1">{children}</ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="mb-3 ml-4 list-decimal space-y-1">{children}</ol>
+              ),
+              a: ({ children, href }) => (
+                <a
+                  href={href}
+                  className="text-emerald-600 underline decoration-1 underline-offset-2 hover:text-emerald-700"
+                >
+                  {children}
+                </a>
+              ),
+              strong: ({ children }) => (
+                <strong className="font-semibold text-zinc-800">{children}</strong>
+              ),
+              code: ({ className, children }) => {
+                const isBlock = className?.includes("hljs");
+                if (isBlock) {
+                  return <code className={className}>{children}</code>;
+                }
+                return (
+                  <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-[12px] text-emerald-700">
+                    {children}
+                  </code>
+                );
+              },
+              pre: ({ children }) => (
+                <pre className="my-3 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-950 p-4 text-[13px] leading-[20px]">
+                  {children}
+                </pre>
+              ),
+              table: ({ children }) => (
+                <table className="my-3 w-full text-[13px] text-zinc-600">
+                  {children}
+                </table>
+              ),
+              th: ({ children }) => (
+                <th className="border-b border-zinc-200 px-3 py-1.5 text-left text-xs font-medium text-zinc-500">
+                  {children}
+                </th>
+              ),
+              td: ({ children }) => (
+                <td className="border-b border-zinc-100 px-3 py-1.5">
+                  {children}
+                </td>
+              ),
+              blockquote: ({ children }) => (
+                <blockquote className="my-3 border-l-2 border-emerald-300 pl-4 text-[13px] text-zinc-500">
+                  {children}
+                </blockquote>
+              ),
+              hr: () => <hr className="my-4 border-zinc-100" />,
+            }}
           >
             {file.content}
           </Markdown>
