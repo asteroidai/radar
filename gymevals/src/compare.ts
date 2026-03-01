@@ -256,14 +256,15 @@ function main(): void {
   const maxCostAll = Math.max(...venueIds.map((id) => Math.max(cost(mapA.get(id)!), cost(mapB.get(id)!))), 0.001);
   const maxDurAll = Math.max(...venueIds.map((id) => Math.max(duration(mapA.get(id)!), duration(mapB.get(id)!))), 1);
 
-  let chartRows = "";
+  let costChartRows = "";
+  let latencyChartRows = "";
   for (const id of venueIds) {
     const a = mapA.get(id)!;
     const b = mapB.get(id)!;
     const cA = cost(a), cB = cost(b);
     const dA = duration(a), dB = duration(b);
 
-    chartRows += `
+    costChartRows += `
     <div class="chart-row">
       <span class="chart-label">${esc(a.venueName)}</span>
       <div class="chart-bars">
@@ -279,7 +280,14 @@ function main(): void {
           </div>
           <span class="bar-value">$${cB.toFixed(2)}</span>
         </div>
-        <div class="bar-line" style="margin-top:4px">
+      </div>
+    </div>`;
+
+    latencyChartRows += `
+    <div class="chart-row">
+      <span class="chart-label">${esc(a.venueName)}</span>
+      <div class="chart-bars">
+        <div class="bar-line">
           <div class="bar-track">
             <div class="bar-fill bar-a-lat" style="width:${((dA / maxDurAll) * 100).toFixed(1)}%"></div>
           </div>
@@ -467,14 +475,19 @@ function main(): void {
     </tbody>
   </table>
 
-  <div class="section-title">Cost &amp; Latency</div>
+  <div class="section-title">Cost</div>
   <div class="chart-legend">
-    <span class="leg-a-cost">A cost</span>
-    <span class="leg-b-cost">B cost</span>
-    <span class="leg-a-lat">A latency</span>
-    <span class="leg-b-lat">B latency</span>
+    <span class="leg-a-cost">A</span>
+    <span class="leg-b-cost">B</span>
   </div>
-  ${chartRows}
+  ${costChartRows}
+
+  <div class="section-title">Latency</div>
+  <div class="chart-legend">
+    <span class="leg-a-lat">A</span>
+    <span class="leg-b-lat">B</span>
+  </div>
+  ${latencyChartRows}
 
   <div class="section-title">Gym Details</div>
   ${detailCards}

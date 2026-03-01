@@ -39,6 +39,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Gymevals
+gymevals/results/
+gymevals/samples/
+
 # Misc
 .DS_Store
 *.pem

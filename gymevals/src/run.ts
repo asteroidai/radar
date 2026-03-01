@@ -16,7 +16,7 @@ function makeRunDir(): string {
   return dir;
 }
 
-const CONCURRENCY = 5;
+const CONCURRENCY = 25;
 
 function slugify(name: string): string {
   return name
