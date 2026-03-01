@@ -1,0 +1,66 @@
+export function RadarIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 16 16"
+      shapeRendering="crispEdges"
+      className={className}
+    >
+      {/* Background (dark filled pixelated circle) */}
+      <rect x="5" y="0" width="6" height="1" fill="#052e16" />
+      <rect x="3" y="1" width="10" height="1" fill="#052e16" />
+      <rect x="2" y="2" width="12" height="1" fill="#052e16" />
+      <rect x="1" y="3" width="14" height="2" fill="#052e16" />
+      <rect x="0" y="5" width="16" height="6" fill="#052e16" />
+      <rect x="1" y="11" width="14" height="2" fill="#052e16" />
+      <rect x="2" y="13" width="12" height="1" fill="#052e16" />
+      <rect x="3" y="14" width="10" height="1" fill="#052e16" />
+      <rect x="5" y="15" width="6" height="1" fill="#052e16" />
+
+      {/* Outline ring */}
+      <rect x="5" y="0" width="6" height="1" fill="#10b981" />
+      <rect x="3" y="1" width="2" height="1" fill="#10b981" />
+      <rect x="11" y="1" width="2" height="1" fill="#10b981" />
+      <rect x="2" y="2" width="1" height="1" fill="#10b981" />
+      <rect x="13" y="2" width="1" height="1" fill="#10b981" />
+      <rect x="1" y="3" width="1" height="2" fill="#10b981" />
+      <rect x="14" y="3" width="1" height="2" fill="#10b981" />
+      <rect x="0" y="5" width="1" height="6" fill="#10b981" />
+      <rect x="15" y="5" width="1" height="6" fill="#10b981" />
+      <rect x="1" y="11" width="1" height="2" fill="#10b981" />
+      <rect x="14" y="11" width="1" height="2" fill="#10b981" />
+      <rect x="2" y="13" width="1" height="1" fill="#10b981" />
+      <rect x="13" y="13" width="1" height="1" fill="#10b981" />
+      <rect x="3" y="14" width="2" height="1" fill="#10b981" />
+      <rect x="11" y="14" width="2" height="1" fill="#10b981" />
+      <rect x="5" y="15" width="6" height="1" fill="#10b981" />
+
+      {/* Crosshair */}
+      <rect x="8" y="2" width="1" height="5" fill="#065f46" />
+      <rect x="8" y="9" width="1" height="5" fill="#065f46" />
+      <rect x="2" y="7" width="5" height="1" fill="#065f46" />
+      <rect x="9" y="7" width="5" height="1" fill="#065f46" />
+
+      {/* Sweep glow */}
+      <rect x="9" y="5" width="1" height="1" fill="#10b981" opacity="0.35" />
+      <rect x="10" y="4" width="1" height="1" fill="#10b981" opacity="0.35" />
+      <rect x="11" y="3" width="1" height="1" fill="#10b981" opacity="0.35" />
+      <rect x="10" y="3" width="1" height="1" fill="#10b981" opacity="0.2" />
+      <rect x="9" y="4" width="1" height="1" fill="#10b981" opacity="0.2" />
+      <rect x="10" y="6" width="1" height="1" fill="#10b981" opacity="0.15" />
+
+      {/* Sweep line */}
+      <rect x="9" y="6" width="1" height="1" fill="#34d399" />
+      <rect x="10" y="5" width="1" height="1" fill="#34d399" />
+      <rect x="11" y="4" width="1" height="1" fill="#34d399" />
+      <rect x="12" y="3" width="1" height="1" fill="#34d399" />
+
+      {/* Center dot */}
+      <rect x="7" y="7" width="2" height="2" fill="#6ee7b7" />
+
+      {/* Blips */}
+      <rect x="11" y="5" width="1" height="1" fill="#ecfdf5" />
+      <rect x="4" y="10" width="1" height="1" fill="#d1fae5" />
+    </svg>
+  );
+}

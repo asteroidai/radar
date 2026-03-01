@@ -1,5 +1,6 @@
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
-import { Radar, Compass, FolderOpen, Newspaper, Trophy } from "lucide-react";
+import { Compass, FolderOpen, Newspaper, Trophy } from "lucide-react";
+import { RadarIcon } from "../components/RadarIcon";
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -11,7 +12,7 @@ function RootLayout() {
       <nav className="sticky top-0 z-50 bg-zinc-50/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center gap-8 px-6 py-4">
           <Link to="/" className="flex items-center gap-2 font-semibold text-zinc-900">
-            <Radar className="h-5 w-5 text-emerald-600" />
+            <RadarIcon className="size-6" />
             Radar
           </Link>
           <div className="flex items-center gap-6 text-sm">
