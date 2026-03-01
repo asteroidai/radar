@@ -1,0 +1,20 @@
+{
+  "name": "@radar/gymevals",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx --env-file=.env src/run.ts"
+  },
+  "dependencies": {
+    "browser-use-sdk": "^3.1.0",
+    "csv-parse": "^5.6.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@radar/typescript-config": "workspace:*",
+    "typescript": "5.9.2",
+    "tsx": "^4.19.0"
+  }
+}
