@@ -20,14 +20,30 @@ function makeRunDir(): string {
 
 const CONCURRENCY = 5;
 
-// Hardcoded target venues — the 5 gyms with richest schedule data
-const TARGET_VENUES: Record<string, string> = {
-  "57191": "crossfit_jensen_beach",
-  "44293": "brickhouse_gym",
-  "203435": "gym_sports_loisirs_bellecour",
-  "72715": "power_boxing_and_fitness",
-  "57387": "precision_dance_company",
-};
+const DEFAULT_COUNT = 10;
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
+function parseArgInt(flag: string): number | undefined {
+  const idx = process.argv.indexOf(flag);
+  if (idx === -1 || idx + 1 >= process.argv.length) return undefined;
+  const val = parseInt(process.argv[idx + 1]!, 10);
+  return Number.isNaN(val) ? undefined : val;
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
 
 function parseCSV(): GymRow[] {
   const raw = readFileSync(CSV_PATH, "utf-8");
@@ -37,13 +53,17 @@ function parseCSV(): GymRow[] {
     relax_column_count: true,
   });
 
-  return records
-    .filter((row) => row["Venue ID"]! in TARGET_VENUES)
+  const count = parseArgInt("--count") ?? DEFAULT_COUNT;
+
+  const allGyms = records
+    .filter((row) => row["Venue ID"] && row["Website"])
     .map((row) => ({
       venueId: row["Venue ID"]!,
       venueName: row["Venue Name"]!,
       website: row["Website"]!,
     }));
+
+  return shuffle(allGyms).slice(0, count);
 }
 
 function decodeHtmlEntities(text: string): string {
@@ -63,7 +83,7 @@ async function runGym(client: BrowserUse, gym: GymRow, runDir: string): Promise<
     venueName: decodeHtmlEntities(gym.venueName),
   };
 
-  const slug = TARGET_VENUES[gym.venueId]!;
+  const slug = slugify(cleanGym.venueName);
   const prompt = buildPrompt(cleanGym, { withRadar });
   console.log(`[START] ${cleanGym.venueName} (${slug})`);
 
