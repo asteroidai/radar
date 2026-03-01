@@ -59,6 +59,7 @@ export function registerSubmit(server: McpServer) {
       const result = await client.mutation(api.files.submit, {
         domain: fm.domain,
         path: fm.path,
+        type: fm.type,
         title: fm.title,
         summary: fm.summary,
         tags: fm.tags,
@@ -73,6 +74,7 @@ export function registerSubmit(server: McpServer) {
         },
         confidence: fm.confidence,
         requiresAuth: fm.requires_auth,
+        scriptLanguage: fm.script_language,
         selectorsCount: fm.selectors_count,
         relatedFiles: fm.related_files,
         content: body.trim(),

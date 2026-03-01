@@ -21,10 +21,14 @@ export const getByDomain = query({
 export const search = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query("sites")
-      .withSearchIndex("search_sites", (q) => q.search("description", args.query))
-      .collect();
+    const q = args.query.toLowerCase();
+    const allSites = await ctx.db.query("sites").collect();
+    return allSites.filter(
+      (site) =>
+        site.name.toLowerCase().includes(q) ||
+        site.domain.toLowerCase().includes(q) ||
+        site.description.toLowerCase().includes(q),
+    );
   },
 });
 

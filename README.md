@@ -184,6 +184,11 @@ export default defineSchema({
     siteId: v.id("sites"),
     domain: v.string(),
     path: v.string(),               // "flows/checkout"
+    type: v.union(                  // File type (see Domain Knowledge Schema)
+      v.literal("readme"), v.literal("sitemap"), v.literal("flow"),
+      v.literal("script"), v.literal("selectors"), v.literal("api"),
+      v.literal("guide"),
+    ),
 
     // Frontmatter fields (structured, queryable)
     title: v.string(),
@@ -205,7 +210,8 @@ export default defineSchema({
     }),
     confidence: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
     requiresAuth: v.boolean(),
-    selectorsCount: v.optional(v.number()),
+    scriptLanguage: v.optional(v.string()),  // For type: "script" (e.g. "playwright-ts")
+    selectorsCount: v.optional(v.number()),  // For type: "selectors"
     relatedFiles: v.array(v.string()),
     version: v.number(),
     lastUpdated: v.number(),
@@ -217,6 +223,7 @@ export default defineSchema({
   })
     .index("by_site", ["siteId"])
     .index("by_domain_path", ["domain", "path"])
+    .index("by_domain_type", ["domain", "type"])
     .index("by_confidence", ["domain", "confidence"])
     .searchIndex("search_content", {
       searchField: "content",
@@ -268,25 +275,111 @@ export default defineSchema({
 });
 ```
 
-### Knowledge File Hierarchy per Site
+### Domain Knowledge Schema
 
-When the explorer scans a site, it generates this structure (stored as individual `files` rows):
+Every domain in Radar follows a canonical file structure. This schema is inspired by agent concepts you may already know -- AGENTS.md, Skills, subagents -- applied to website knowledge. Both the explorer agent and community contributors must follow this structure.
+
+#### Concept Mapping
+
+| Agent Concept | Radar Equivalent | Purpose |
+|---|---|---|
+| `AGENTS.md` / `CLAUDE.md` | `README` (type: `readme`) | Root file for a domain. Everything an agent needs to orient itself. |
+| Skills / `SKILL.md` | `flows/*` (type: `flow`) | Step-by-step procedures for completing tasks on the site. |
+| Subagent scripts | `scripts/*` (type: `script`) | Reusable automation code (Playwright, Puppeteer, etc.) ready to execute. |
+| Cursor Rules / constraints | `gotchas` (type: `guide`) | Known failure modes, anti-bot measures, rate limits, dynamic IDs. |
+| Tips / shortcuts | `tips` (type: `guide`) | Direct URLs, URL hacks, API shortcuts, hidden features. |
+
+#### Canonical Directory Structure
 
 ```
-amazon.com/
-  README.md              -- Overview, purpose, key URLs (llms.txt format)
-  navigation/
-    sitemap.md           -- Key pages and their URLs
-    main-nav.md          -- Main navigation structure
-  flows/
-    search.md            -- How to search for products
-    checkout.md          -- Checkout flow steps
-    login.md             -- Authentication flow
-  elements/
-    selectors.md         -- Key CSS selectors
-  gotchas.md             -- Known issues, CAPTCHAs, rate limits
-  tips.md                -- Agent-specific shortcuts
+<domain>/
+  README                   # Domain overview (AGENTS.md equivalent)
+  sitemap                  # High-level page map with URLs and hierarchy
+  flows/                   # Skills: step-by-step task procedures
+    login                  #   Authentication flow
+    search                 #   Product/content search procedure
+    checkout               #   Multi-step purchase flow
+    signup                 #   Account creation flow
+    ...
+  scripts/                 # Reusable automation code snippets
+    fill-login-form        #   Playwright script for login
+    navigate-to-product    #   Script to navigate to a product page
+    add-to-cart            #   Script for add-to-cart interaction
+    ...
+  selectors/               # CSS/XPath selector catalogs by feature area
+    global                 #   Site-wide selectors (header, nav, footer)
+    checkout-form          #   Checkout page form selectors
+    search-results         #   Search results page selectors
+    ...
+  api/                     # Discovered API endpoints and patterns
+    rest-endpoints         #   REST API documentation
+    graphql-schema         #   GraphQL schema/queries
+    ...
+  gotchas                  # Anti-patterns, CAPTCHAs, A/B tests, session quirks
+  tips                     # Agent shortcuts, direct URLs, undocumented features
 ```
+
+#### File Types
+
+Every knowledge file has a `type` field in its frontmatter that classifies its purpose. This lets agents filter to exactly what they need (e.g. "show me all scripts for checkout flows across every domain").
+
+| Type | Path Convention | Purpose | When to Use |
+|---|---|---|---|
+| `readme` | `README` | Domain root file. Site overview, capabilities, key URLs, auth requirements, complexity notes. Follows [llms.txt](https://llmstxt.org/) structure. Links to all other files. | Always created first. One per domain. |
+| `sitemap` | `sitemap` | Structured map of the site's key pages, their URLs, and navigation hierarchy. The "table of contents" for the website. | When the site has multiple important pages/sections. |
+| `flow` | `flows/<task-name>` | Step-by-step procedure for completing a specific task. Includes URLs, selectors, expected states, and error handling. Like a Claude Skill. | For any multi-step user journey (login, checkout, search, signup, etc.). |
+| `script` | `scripts/<action-name>` | Ready-to-use automation code (Playwright, Puppeteer, etc.). Composable building blocks that flows can reference. | For common interactions that benefit from copy-paste code. |
+| `selectors` | `selectors/<page-or-feature>` | CSS/XPath selector catalog for a page or feature area. The reference data that flows and scripts depend on. | When a page has many interactive elements worth cataloging. |
+| `api` | `api/<endpoint-group>` | Discovered API endpoints (REST, GraphQL, WebSocket). Often more reliable than UI automation. | When the site exposes APIs that agents can use directly. |
+| `guide` | Any path (commonly `gotchas`, `tips`, or custom) | General-purpose knowledge: gotchas, tips, tutorials, FAQs, workarounds. Catch-all for knowledge that doesn't fit the above types. | For anti-bot notes, rate limit info, shortcuts, or any other useful knowledge. |
+
+#### File Type Details
+
+**`readme` -- The Domain Root File**
+
+Every domain should have a `README` file as its entry point. This is the first file an agent reads (via `radar_get_context`) to understand what knowledge is available. It should:
+- Describe what the site is and what can be done on it
+- Note auth requirements, complexity, and anti-bot measures
+- Link to all other knowledge files (like an llms.txt index)
+
+**`flow` -- Task Procedures (Skills)**
+
+Flows are the most valuable file type. Each flow documents how to accomplish a specific task, step by step. A good flow includes:
+- Prerequisites (auth state, starting page, etc.)
+- Numbered steps with URLs and CSS selectors
+- Expected page states after each step (what to assert/wait for)
+- Common failure modes and recovery steps
+- References to related `selectors/` and `scripts/` files
+
+**`script` -- Automation Code**
+
+Scripts contain ready-to-execute code snippets. They should:
+- Specify the `script_language` in frontmatter (e.g. `playwright-ts`, `playwright-py`, `puppeteer`)
+- Be self-contained or clearly document dependencies
+- Include inline comments explaining selector choices and wait strategies
+- Handle common error states (element not found, timeout, etc.)
+
+**`selectors` -- Element Reference Catalogs**
+
+Selector files provide CSS/XPath selectors organized by page or feature. They should:
+- Group selectors logically (by form, by section, by action)
+- Include the `selectors_count` frontmatter field
+- Note which selectors are fragile (dynamic IDs, A/B tested)
+- Provide fallback selectors where possible
+
+**`api` -- API Endpoint Documentation**
+
+API files document discovered endpoints that agents can call directly, bypassing the UI. They should:
+- Include full URLs, HTTP methods, request/response shapes
+- Note authentication requirements (cookies, tokens, headers)
+- Warn about rate limits and undocumented behaviors
+
+**`guide` -- General Knowledge**
+
+The catch-all type for everything else. Common uses:
+- `gotchas` -- CAPTCHAs, rate limits, A/B tests, dynamic IDs, session expiry
+- `tips` -- Direct URLs, URL parameters, keyboard shortcuts, hidden features
+- Custom guides for domain-specific knowledge
 
 ---
 
@@ -301,10 +394,20 @@ This is the single source of truth for the frontmatter format. Used by the explo
 ```typescript
 import { z } from "zod";
 
+export const FILE_TYPES = [
+  "readme", "sitemap", "flow", "script", "selectors", "api", "guide",
+] as const;
+
+export const SCRIPT_LANGUAGES = [
+  "playwright-ts", "playwright-py", "puppeteer",
+  "selenium-py", "selenium-java", "cypress", "other",
+] as const;
+
 export const knowledgeFrontmatterSchema = z.object({
   title: z.string(),
   domain: z.string(),
   path: z.string(),
+  type: z.enum(FILE_TYPES),              // File type (see Domain Knowledge Schema)
   summary: z.string().max(300),
   tags: z.array(z.string()),
   entities: z.object({
@@ -318,7 +421,8 @@ export const knowledgeFrontmatterSchema = z.object({
   }),
   confidence: z.enum(["low", "medium", "high"]),
   requires_auth: z.boolean(),
-  selectors_count: z.number().int().nonneg().optional(),
+  script_language: z.enum(SCRIPT_LANGUAGES).optional(), // Required for type: "script"
+  selectors_count: z.number().int().nonneg().optional(), // Required for type: "selectors"
   related_files: z.array(z.string()).default([]),
   version: z.number().int().positive(),
   last_updated: z.string().datetime(),
@@ -354,6 +458,7 @@ If frontmatter is missing or invalid, `zod-matter` throws a `ZodError` with spec
 title: "Checkout Flow"
 domain: "amazon.com"
 path: "flows/checkout"
+type: "flow"
 summary: "4-step checkout: cart review -> shipping -> payment -> confirmation. Requires login. Key selectors for each form field included."
 tags: ["checkout", "forms", "payment", "purchase"]
 entities:
@@ -365,11 +470,10 @@ intent:
   audience: "browser-agent"
 confidence: "high"
 requires_auth: true
-selectors_count: 14
 related_files:
   - "flows/login"
-  - "elements/selectors"
-  - "navigation/main-nav"
+  - "selectors/checkout-form"
+  - "scripts/fill-checkout-form"
 version: 3
 last_updated: "2026-02-28T10:00:00Z"
 last_contributor: "explorer-agent-1"
@@ -392,6 +496,60 @@ URL: `https://amazon.com/gp/cart/view.html`
 ...
 ```
 
+### Example: Script File
+
+```markdown
+---
+title: "Fill Login Form"
+domain: "amazon.com"
+path: "scripts/fill-login-form"
+type: "script"
+summary: "Playwright script to fill and submit the Amazon login form. Handles email-first then password-second flow."
+tags: ["login", "auth", "playwright", "automation"]
+entities:
+  primary: "Login automation"
+  disambiguation: "Automated form fill for the two-step login flow, not OAuth or SSO."
+  related_concepts: ["authentication", "session", "cookies"]
+intent:
+  core_question: "How do I automate logging into amazon.com?"
+  audience: "browser-agent"
+confidence: "high"
+requires_auth: false
+script_language: "playwright-ts"
+related_files:
+  - "flows/login"
+  - "selectors/global"
+version: 1
+last_updated: "2026-02-28T12:00:00Z"
+last_contributor: "cursor-agent"
+last_change_reason: "Initial script from login flow exploration"
+---
+
+# Fill Login Form
+
+Automates the Amazon two-step login (email -> password).
+
+## Usage
+
+\`\`\`typescript
+import { Page } from "playwright";
+
+export async function fillLoginForm(page: Page, email: string, password: string) {
+  await page.goto("https://amazon.com/ap/signin");
+  await page.fill("#ap_email", email);
+  await page.click("#continue");
+  await page.fill("#ap_password", password);
+  await page.click("#signInSubmit");
+  await page.waitForURL("**/ref=nav_signin*", { timeout: 10000 });
+}
+\`\`\`
+
+## Notes
+- Amazon uses a two-step form: email first, then password on a second screen
+- The `#continue` button may be slow; add a wait if needed
+- After login, session cookies persist for ~30 minutes
+```
+
 ### Example: Per-Site README.md (llms.txt Format)
 
 The `README.md` for each site follows the [llms.txt](https://llmstxt.org/) structure -- an agent reads this first to understand what knowledge is available and navigate to specific files.
@@ -403,19 +561,29 @@ The `README.md` for each site follows the [llms.txt](https://llmstxt.org/) struc
 
 Amazon.com is a large e-commerce platform with dynamic page content, anti-bot protections, and frequent A/B testing of UI elements. Agents should expect selectors to change periodically.
 
-## Navigation
-- [Sitemap](navigation/sitemap): Key pages and their URLs
-- [Main Navigation](navigation/main-nav): Header nav structure, category menus
+## Site Map
+- [Sitemap](sitemap): Key pages, URLs, and navigation hierarchy
 
 ## Flows
 - [Search](flows/search): Product search, filters, sorting, pagination
 - [Checkout](flows/checkout): 4-step purchase flow with form selectors
 - [Login](flows/login): Authentication methods and session handling
+- [Signup](flows/signup): Account creation flow
 
-## Elements
-- [Selectors](elements/selectors): CSS selectors for common interactive elements
+## Scripts
+- [Fill Login Form](scripts/fill-login-form): Playwright script for two-step login
+- [Add to Cart](scripts/add-to-cart): Script to add a product to cart by ASIN
+- [Navigate to Product](scripts/navigate-to-product): Script to go from search to PDP
 
-## Gotchas & Tips
+## Selectors
+- [Global](selectors/global): Site-wide selectors (header, nav, footer, search bar)
+- [Checkout Form](selectors/checkout-form): Checkout page form field selectors
+- [Search Results](selectors/search-results): Search result page element selectors
+
+## API
+- [REST Endpoints](api/rest-endpoints): Discovered REST APIs (autocomplete, pricing)
+
+## Guides
 - [Gotchas](gotchas): CAPTCHAs, rate limits, dynamic IDs, A/B tests
 - [Tips](tips): Agent shortcuts -- direct URLs, URL parameters, API patterns
 ```

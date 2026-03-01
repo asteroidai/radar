@@ -6,6 +6,7 @@ function reconstructMarkdown(file: {
   title: string;
   domain: string;
   path: string;
+  type?: string;
   summary: string;
   tags: string[];
   entities: {
@@ -16,6 +17,7 @@ function reconstructMarkdown(file: {
   intent: { coreQuestion: string; audience: string };
   confidence: string;
   requiresAuth: boolean;
+  scriptLanguage?: string;
   selectorsCount?: number;
   relatedFiles: string[];
   version: number;
@@ -29,6 +31,7 @@ function reconstructMarkdown(file: {
     `title: "${file.title}"`,
     `domain: "${file.domain}"`,
     `path: "${file.path}"`,
+    file.type ? `type: "${file.type}"` : null,
     `summary: "${file.summary}"`,
     `tags: [${file.tags.map((t) => `"${t}"`).join(", ")}]`,
     `entities:`,
@@ -40,6 +43,7 @@ function reconstructMarkdown(file: {
     `  audience: "${file.intent.audience}"`,
     `confidence: "${file.confidence}"`,
     `requires_auth: ${file.requiresAuth}`,
+    file.scriptLanguage ? `script_language: "${file.scriptLanguage}"` : null,
     file.selectorsCount !== undefined
       ? `selectors_count: ${file.selectorsCount}`
       : null,

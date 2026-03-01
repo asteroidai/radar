@@ -52,6 +52,7 @@ export const seedData = mutation({
       siteId: githubId,
       domain: "github.com",
       path: "README",
+      type: "readme",
       title: "GitHub Overview",
       summary:
         "Code hosting platform with repository management, pull requests, issues, and CI/CD. Requires auth for most write operations.",
@@ -103,6 +104,7 @@ GitHub is the world's largest code hosting platform. Most interactions require a
       siteId: githubId,
       domain: "github.com",
       path: "flows/create-repo",
+      type: "flow",
       title: "Create Repository Flow",
       summary:
         "3-step flow: click New -> fill form (name, visibility, readme) -> create. Requires auth.",
@@ -152,6 +154,7 @@ Redirects to the new repository page on success.`,
       siteId: amazonId,
       domain: "amazon.com",
       path: "README",
+      type: "readme",
       title: "Amazon Overview",
       summary:
         "E-commerce marketplace with product search, checkout, and account management. High complexity with anti-bot protections.",
@@ -201,6 +204,7 @@ Amazon.com is a large e-commerce platform with dynamic page content, anti-bot pr
       siteId: amazonId,
       domain: "amazon.com",
       path: "flows/checkout",
+      type: "flow",
       title: "Checkout Flow",
       summary:
         "4-step checkout: cart review -> shipping -> payment -> confirmation. Requires login. Key selectors for each form field included.",
@@ -260,6 +264,7 @@ Place order: \`input[name="placeYourOrder1"]\``,
       siteId: linearId,
       domain: "linear.app",
       path: "README",
+      type: "readme",
       title: "Linear Overview",
       summary:
         "Project management tool with issue tracking, sprint planning, and team workflows. Keyboard-driven UI.",
@@ -309,6 +314,7 @@ Linear is a modern project management tool built for speed. The UI is highly key
       siteId: linearId,
       domain: "linear.app",
       path: "flows/create-issue",
+      type: "flow",
       title: "Create Issue Flow",
       summary:
         "Quick issue creation via Cmd+K or C shortcut. Supports title, description, assignee, priority, labels, project, and cycle.",

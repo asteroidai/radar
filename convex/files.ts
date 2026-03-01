@@ -75,6 +75,17 @@ export const submit = mutation({
   args: {
     domain: v.string(),
     path: v.string(),
+    type: v.optional(
+      v.union(
+        v.literal("readme"),
+        v.literal("sitemap"),
+        v.literal("flow"),
+        v.literal("script"),
+        v.literal("selectors"),
+        v.literal("api"),
+        v.literal("guide"),
+      ),
+    ),
     title: v.string(),
     summary: v.string(),
     tags: v.array(v.string()),
@@ -98,6 +109,17 @@ export const submit = mutation({
       v.literal("high"),
     ),
     requiresAuth: v.boolean(),
+    scriptLanguage: v.optional(
+      v.union(
+        v.literal("playwright-ts"),
+        v.literal("playwright-py"),
+        v.literal("puppeteer"),
+        v.literal("selenium-py"),
+        v.literal("selenium-java"),
+        v.literal("cypress"),
+        v.literal("other"),
+      ),
+    ),
     selectorsCount: v.optional(v.number()),
     relatedFiles: v.array(v.string()),
     content: v.string(),

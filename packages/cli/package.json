@@ -1,6 +1,6 @@
 {
   "name": "radar-cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "CLI for Radar — the shared knowledge base for web agents",
   "type": "module",
   "bin": {

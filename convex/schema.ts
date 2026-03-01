@@ -14,16 +14,23 @@ export default defineSchema({
     ),
     authRequired: v.optional(v.boolean()),
   })
-    .index("by_domain", ["domain"])
-    .searchIndex("search_sites", {
-      searchField: "description",
-      filterFields: ["domain"],
-    }),
+    .index("by_domain", ["domain"]),
 
   files: defineTable({
     siteId: v.id("sites"),
     domain: v.string(),
     path: v.string(),
+    type: v.optional(
+      v.union(
+        v.literal("readme"),
+        v.literal("sitemap"),
+        v.literal("flow"),
+        v.literal("script"),
+        v.literal("selectors"),
+        v.literal("api"),
+        v.literal("guide"),
+      ),
+    ),
 
     title: v.string(),
     summary: v.string(),
@@ -48,6 +55,17 @@ export default defineSchema({
       v.literal("high"),
     ),
     requiresAuth: v.boolean(),
+    scriptLanguage: v.optional(
+      v.union(
+        v.literal("playwright-ts"),
+        v.literal("playwright-py"),
+        v.literal("puppeteer"),
+        v.literal("selenium-py"),
+        v.literal("selenium-java"),
+        v.literal("cypress"),
+        v.literal("other"),
+      ),
+    ),
     selectorsCount: v.optional(v.number()),
     relatedFiles: v.array(v.string()),
     version: v.number(),
@@ -59,6 +77,7 @@ export default defineSchema({
   })
     .index("by_site", ["siteId"])
     .index("by_domain_path", ["domain", "path"])
+    .index("by_domain_type", ["domain", "type"])
     .index("by_confidence", ["domain", "confidence"])
     .searchIndex("search_content", {
       searchField: "content",
