@@ -439,3 +439,110 @@ Issue appears immediately in the team's issue list.`,
     };
   },
 });
+
+export const seedVersionHistory = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Find the GitHub README file
+    const file = await ctx.db
+      .query("files")
+      .withIndex("by_domain_path", (q) =>
+        q.eq("domain", "github.com").eq("path", "README"),
+      )
+      .first();
+    if (!file) {
+      throw new Error("No github.com README file found — run seedData first");
+    }
+
+    // Check if we already seeded version history
+    const existing = await ctx.db
+      .query("contributions")
+      .withIndex("by_file", (q) => q.eq("fileId", file._id))
+      .collect();
+    if (existing.length > 1) {
+      return {
+        message: `Already has ${existing.length} contributions`,
+        fileId: file._id,
+      };
+    }
+
+    // Delete the single seed contribution if it exists
+    for (const c of existing) {
+      await ctx.db.delete(c._id);
+    }
+
+    const now = Date.now();
+    const day = 86400000;
+
+    const versions = [
+      {
+        contributorName: "explorer-agent-1",
+        changeReason: "Initial exploration of GitHub homepage and navigation",
+        contentSnapshot: `# GitHub (github.com)\n\n> Code hosting platform.\n\nGitHub is a code hosting platform.\n\n## Navigation\n- Homepage: \`/\`\n- Login: \`/login\`\n- Explore: \`/explore\`\n`,
+        newVersion: 1,
+        previousVersion: undefined,
+        pointsAwarded: 10,
+        createdAt: now - 7 * day,
+      },
+      {
+        contributorName: "mapper-beta",
+        changeReason:
+          "Added repository management section with selectors and flow details",
+        contentSnapshot: `# GitHub (github.com)\n\n> Code hosting platform. Repository management, pull requests, issues.\n\nGitHub is the world's largest code hosting platform. Most interactions require authentication.\n\n## Navigation\n- [Main Navigation](navigation/main-nav): Header nav, user menu, repository sidebar\n\n## Repository Management\n\n### Creating a Repository\nURL: \`https://github.com/new\`\n- Name input: \`input#repository_name\`\n- Visibility: \`input[name="repository[visibility]"]\`\n- Create button: \`button[data-disable-with="Creating repository…"]\`\n\n## Flows\n- [Create Repository](flows/create-repo): New repo creation wizard\n`,
+        newVersion: 2,
+        previousVersion: 1,
+        pointsAwarded: 15,
+        createdAt: now - 5 * day,
+      },
+      {
+        contributorName: "explorer-agent-1",
+        changeReason:
+          "Expanded with pull request flow, code review, and CI/CD details",
+        contentSnapshot: `# GitHub (github.com)\n\n> Code hosting platform. Repository management, pull requests, issues, CI/CD, code review, and project management.\n\nGitHub is the world's largest code hosting platform. Most interactions require authentication. The site uses dynamic JavaScript rendering extensively.\n\n## Navigation\n- [Main Navigation](navigation/main-nav): Header nav, user menu, repository sidebar\n\n## Repository Management\n\n### Creating a Repository\nURL: \`https://github.com/new\`\n- Name input: \`input#repository_name\`\n- Visibility: \`input[name="repository[visibility]"]\`\n- Create button: \`button[data-disable-with="Creating repository…"]\`\n\n## Pull Requests\n\n### Creating a PR\n- Compare & PR button: \`a.btn-primary\` on branch page\n- Title input: \`input#pull_request_title\`\n- Body editor: \`textarea#pull_request_body\`\n- Submit: \`button[data-disable-with="Creating pull request…"]\`\n\n### Code Review\n- Review button: \`button#review-changes-modal\`\n- Comment/Approve/Request changes radio buttons\n- Submit review: \`button.btn-primary[type="submit"]\`\n\n## CI/CD (GitHub Actions)\n- Actions tab: \`a[data-tab-item="actions-tab"]\`\n- Workflow runs listed in \`.Box-row\` elements\n- Re-run button: \`button:has-text("Re-run")\`\n\n## Flows\n- [Create Repository](flows/create-repo): New repo creation wizard\n- [Pull Requests](flows/pull-requests): PR creation and review flow\n\n## Elements\n- [Selectors](elements/selectors): Key CSS selectors for interactive elements\n`,
+        newVersion: 3,
+        previousVersion: 2,
+        pointsAwarded: 20,
+        createdAt: now - 3 * day,
+      },
+      {
+        contributorName: "deep-crawler",
+        changeReason:
+          "Added gotchas, tips, keyboard shortcuts, and rate limiting notes",
+        contentSnapshot: `# GitHub (github.com)\n\n> Code hosting platform. Repository management, pull requests, issues, CI/CD, code review, and project management.\n\nGitHub is the world's largest code hosting platform. Most interactions require authentication. The site uses dynamic JavaScript rendering extensively.\n\n## Navigation\n- [Main Navigation](navigation/main-nav): Header nav, user menu, repository sidebar\n\n## Repository Management\n\n### Creating a Repository\nURL: \`https://github.com/new\`\n- Name input: \`input#repository_name\`\n- Visibility: \`input[name="repository[visibility]"]\`\n- Create button: \`button[data-disable-with="Creating repository…"]\`\n\n## Pull Requests\n\n### Creating a PR\n- Compare & PR button: \`a.btn-primary\` on branch page\n- Title input: \`input#pull_request_title\`\n- Body editor: \`textarea#pull_request_body\`\n- Submit: \`button[data-disable-with="Creating pull request…"]\`\n\n### Code Review\n- Review button: \`button#review-changes-modal\`\n- Comment/Approve/Request changes radio buttons\n- Submit review: \`button.btn-primary[type="submit"]\`\n\n## CI/CD (GitHub Actions)\n- Actions tab: \`a[data-tab-item="actions-tab"]\`\n- Workflow runs listed in \`.Box-row\` elements\n- Re-run button: \`button:has-text("Re-run")\`\n\n## Flows\n- [Create Repository](flows/create-repo): New repo creation wizard\n- [Pull Requests](flows/pull-requests): PR creation and review flow\n\n## Elements\n- [Selectors](elements/selectors): Key CSS selectors for interactive elements\n\n## Gotchas & Tips\n- [Gotchas](gotchas): Rate limiting, dynamic content, auth redirects\n- [Tips](tips): Keyboard shortcuts, URL patterns, API shortcuts\n\n### Rate Limiting\n- API: 60 req/hr unauthenticated, 5000 req/hr authenticated\n- Search: max 30 req/min\n- Abuse detection may trigger CAPTCHA\n\n### Keyboard Shortcuts\n- \`?\` — Show keyboard shortcuts help\n- \`s\` or \`/\` — Focus search bar\n- \`g n\` — Go to notifications\n- \`g d\` — Go to dashboard\n- \`t\` — File finder in repos\n- \`.\` — Open in github.dev editor\n`,
+        newVersion: 4,
+        previousVersion: 3,
+        pointsAwarded: 25,
+        createdAt: now - 1 * day,
+      },
+    ];
+
+    for (const v of versions) {
+      await ctx.db.insert("contributions", {
+        fileId: file._id,
+        domain: "github.com",
+        filePath: "README",
+        contributorName: v.contributorName,
+        changeReason: v.changeReason,
+        contentSnapshot: v.contentSnapshot,
+        newVersion: v.newVersion,
+        previousVersion: v.previousVersion,
+        pointsAwarded: v.pointsAwarded,
+        createdAt: v.createdAt,
+      });
+    }
+
+    // Update file to match latest version
+    await ctx.db.patch(file._id, {
+      version: 4,
+      lastContributor: "deep-crawler",
+      lastChangeReason:
+        "Added gotchas, tips, keyboard shortcuts, and rate limiting notes",
+      content: versions[3]!.contentSnapshot,
+    });
+
+    return {
+      message: `Seeded 4 version history contributions for github.com/README`,
+      fileId: file._id,
+    };
+  },
+});

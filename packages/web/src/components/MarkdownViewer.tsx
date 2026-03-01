@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
-import { GitBranch, User, FileCode, FileText } from "lucide-react";
+import { GitBranch, User, FileCode, FileText, History } from "lucide-react";
+import { VersionHistoryPanel } from "./VersionHistoryPanel";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface FileData {
+  _id?: Id<"files">;
   path: string;
   title: string;
   content: string;
@@ -15,6 +18,12 @@ interface FileData {
 
 export function MarkdownViewer({ file }: { file: FileData | null }) {
   const [raw, setRaw] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Reset history view when file changes
+  useEffect(() => {
+    setShowHistory(false);
+  }, [file?._id]);
 
   if (!file) {
     return (
@@ -44,35 +53,56 @@ export function MarkdownViewer({ file }: { file: FileData | null }) {
           </div>
         </div>
 
-        {/* Raw / Formatted toggle */}
-        <div className="flex shrink-0 items-center rounded-lg border border-zinc-200 bg-zinc-50 p-0.5">
-          <button
-            onClick={() => setRaw(false)}
-            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
-              !raw
-                ? "bg-white text-zinc-900 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-600"
-            }`}
-          >
-            <FileText className="h-3 w-3" />
-            Formatted
-          </button>
-          <button
-            onClick={() => setRaw(true)}
-            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
-              raw
-                ? "bg-white text-zinc-900 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-600"
-            }`}
-          >
-            <FileCode className="h-3 w-3" />
-            Raw
-          </button>
+        {/* Raw / Formatted toggle + History button */}
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center rounded-lg border border-zinc-200 bg-zinc-50 p-0.5">
+            <button
+              onClick={() => { setRaw(false); setShowHistory(false); }}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
+                !raw && !showHistory
+                  ? "bg-white text-zinc-900 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              <FileText className="h-3 w-3" />
+              Formatted
+            </button>
+            <button
+              onClick={() => { setRaw(true); setShowHistory(false); }}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
+                raw && !showHistory
+                  ? "bg-white text-zinc-900 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              <FileCode className="h-3 w-3" />
+              Raw
+            </button>
+          </div>
+          {file._id && (
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition-colors ${
+                showHistory
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  : "border-zinc-200 bg-zinc-50 text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              <History className="h-3 w-3" />
+              History
+            </button>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      {raw ? (
+      {showHistory && file._id ? (
+        <VersionHistoryPanel
+          fileId={file._id}
+          filePath={file.path}
+          onBack={() => setShowHistory(false)}
+        />
+      ) : raw ? (
         <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
           <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
             <span className="text-xs text-zinc-500">{file.path}</span>
