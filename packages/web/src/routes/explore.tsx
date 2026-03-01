@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { ExploreModal } from "@/components/ExploreModal";
 import { CompactFileTree } from "@/components/CompactFileTree";
+import { AsteroidIcon, BrowserUseIcon } from "@/components/ProviderIcons";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 
 export const Route = createFileRoute("/explore")({
@@ -80,8 +81,18 @@ function LivePreview({
   );
 }
 
-function ReplayLink({ sessionId }: { sessionId: string }) {
-  const url = `https://cloud.browser-use.com/experimental/session/${sessionId}`;
+function ReplayLink({ exploration }: { exploration: Exploration }) {
+  const provider = exploration.provider ?? "browser-use";
+
+  const url =
+    provider === "asteroid" && exploration.executionId
+      ? `https://platform.asteroid.ai/executions/${exploration.executionId}`
+      : exploration.sessionId
+        ? `https://cloud.browser-use.com/experimental/session/${exploration.sessionId}`
+        : null;
+
+  if (!url) return null;
+
   return (
     <a
       href={url}
@@ -90,9 +101,23 @@ function ReplayLink({ sessionId }: { sessionId: string }) {
       className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
     >
       <Play className="h-3 w-3 text-emerald-500" />
-      View replay
+      {provider === "asteroid" ? "View execution" : "View replay"}
       <ExternalLink className="h-3 w-3" />
     </a>
+  );
+}
+
+function ProviderBadge({ provider }: { provider: string }) {
+  const isAsteroid = provider === "asteroid";
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
+      {isAsteroid ? (
+        <AsteroidIcon className="h-3 w-3" />
+      ) : (
+        <BrowserUseIcon className="h-3 w-3" />
+      )}
+      {isAsteroid ? "Asteroid" : "Browser Use"}
+    </span>
   );
 }
 
@@ -103,11 +128,13 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
     domain: exploration.domain,
   });
 
+  const provider = exploration.provider ?? "browser-use";
   const isRunning = exploration.status === "running";
   const isDone =
     exploration.status === "completed" || exploration.status === "failed";
 
-  const showLive = isRunning && !!exploration.liveUrl;
+  const isBrowserUse = provider === "browser-use";
+  const showLive = isRunning && isBrowserUse && !!exploration.liveUrl;
 
   return (
     <Link to="/sites/$domain" params={{ domain: exploration.domain }} className="block rounded-lg border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-sm">
@@ -123,6 +150,7 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
               <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
               {config.label}
             </span>
+            <ProviderBadge provider={provider} />
           </div>
           <p className="mt-1 truncate text-sm text-zinc-400">
             {exploration.url}
@@ -134,8 +162,8 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
           )}
         </div>
 
-        {/* Thumbnail preview (small, right-aligned) or replay link */}
-        <div className="flex shrink-0 items-center">
+        {/* Thumbnail preview, live link, or replay link */}
+        <div className="flex shrink-0 items-center gap-2">
           {showLive && !expanded && (
             <div onClick={(e) => e.preventDefault()}>
               <LivePreview
@@ -145,15 +173,29 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
               />
             </div>
           )}
-          {isDone && exploration.sessionId && (
+          {isRunning && !isBrowserUse && exploration.liveUrl && (
             <div onClick={(e) => e.preventDefault()}>
-              <ReplayLink sessionId={exploration.sessionId} />
+              <a
+                href={exploration.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+              >
+                <Play className="h-3 w-3 text-emerald-500" />
+                View live
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+          {isDone && (
+            <div onClick={(e) => e.preventDefault()}>
+              <ReplayLink exploration={exploration} />
             </div>
           )}
         </div>
       </div>
 
-      {/* Expanded preview (full width, below the header) */}
+      {/* Expanded preview (full width, below the header) — browser-use only */}
       {showLive && expanded && (
         <div className="mt-3" onClick={(e) => e.preventDefault()}>
           <LivePreview
@@ -207,7 +249,7 @@ function ExplorePage() {
               Explorations
             </h1>
             <p className="mt-1 text-sm text-zinc-400">
-              Track Browser Use agents exploring the web
+              Track agents exploring the web
             </p>
           </div>
           <button

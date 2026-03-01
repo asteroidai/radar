@@ -113,6 +113,9 @@ export default defineSchema({
     domain: v.string(),
     url: v.string(),
     instructions: v.optional(v.string()),
+    provider: v.optional(
+      v.union(v.literal("browser-use"), v.literal("asteroid")),
+    ),
     status: v.union(
       v.literal("queued"),
       v.literal("running"),
@@ -120,6 +123,7 @@ export default defineSchema({
       v.literal("failed"),
     ),
     sessionId: v.optional(v.string()),
+    executionId: v.optional(v.string()),
     liveUrl: v.optional(v.string()),
     filesGenerated: v.optional(v.number()),
     resultSummary: v.optional(v.string()),

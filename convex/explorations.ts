@@ -39,21 +39,26 @@ export const start = mutation({
   args: {
     url: v.string(),
     instructions: v.optional(v.string()),
+    provider: v.optional(
+      v.union(v.literal("browser-use"), v.literal("asteroid")),
+    ),
   },
   handler: async (ctx, args) => {
     const domain = new URL(args.url).hostname.replace(/^www\./, "");
+    const provider = args.provider ?? "asteroid";
 
     const explorationId = await ctx.db.insert("explorations", {
       domain,
       url: args.url,
       instructions: args.instructions,
+      provider,
       status: "queued",
       startedAt: Date.now(),
     });
 
-    const runRef = makeFunctionReference<"action">(
-      "explorationAction:run",
-    );
+    const actionModule =
+      provider === "asteroid" ? "asteroidAction" : "explorationAction";
+    const runRef = makeFunctionReference<"action">(`${actionModule}:run`);
     await ctx.scheduler.runAfter(0, runRef, {
       explorationId,
     });
@@ -72,6 +77,7 @@ export const updateStatus = mutation({
       v.literal("failed"),
     ),
     sessionId: v.optional(v.string()),
+    executionId: v.optional(v.string()),
     liveUrl: v.optional(v.string()),
     filesGenerated: v.optional(v.number()),
     resultSummary: v.optional(v.string()),
@@ -106,6 +112,7 @@ export const _updateStatus = internalMutation({
       v.literal("failed"),
     ),
     sessionId: v.optional(v.string()),
+    executionId: v.optional(v.string()),
     liveUrl: v.optional(v.string()),
     filesGenerated: v.optional(v.number()),
     resultSummary: v.optional(v.string()),

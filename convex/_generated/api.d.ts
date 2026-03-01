@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as asteroidAction from "../asteroidAction.js";
 import type * as backfill from "../backfill.js";
 import type * as contributions from "../contributions.js";
 import type * as contributors from "../contributors.js";
@@ -26,6 +27,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  asteroidAction: typeof asteroidAction;
   backfill: typeof backfill;
   contributions: typeof contributions;
   contributors: typeof contributors;

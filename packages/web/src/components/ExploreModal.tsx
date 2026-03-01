@@ -3,6 +3,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Compass, X } from "lucide-react";
+import { AsteroidIcon, BrowserUseIcon } from "./ProviderIcons";
+
+type Provider = "asteroid" | "browser-use";
 
 export function ExploreModal({
   open,
@@ -16,6 +19,7 @@ export function ExploreModal({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [url, setUrl] = useState(initialUrl);
   const [instructions, setInstructions] = useState("");
+  const [provider, setProvider] = useState<Provider>("asteroid");
   const [starting, setStarting] = useState(false);
   const startExploration = useMutation(api.explorations.start);
   const navigate = useNavigate();
@@ -48,6 +52,7 @@ export function ExploreModal({
       await startExploration({
         url: normalized,
         instructions: instructions.trim() || undefined,
+        provider,
       });
       handleClose();
       navigate({ to: "/explore" });
@@ -78,6 +83,35 @@ export function ExploreModal({
       </div>
 
       <div className="space-y-4 px-6 py-5">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-700">
+            Provider
+          </label>
+          <div className="flex gap-1 rounded-lg border border-zinc-200 p-1">
+            {(["asteroid", "browser-use"] as const).map((p) => {
+              const selected = provider === p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setProvider(p)}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    selected
+                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                      : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700"
+                  }`}
+                >
+                  {p === "asteroid" ? (
+                    <AsteroidIcon className="h-4 w-4" />
+                  ) : (
+                    <BrowserUseIcon className="h-4 w-4" />
+                  )}
+                  {p === "asteroid" ? "Asteroid" : "Browser Use"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-zinc-700">
             URL
