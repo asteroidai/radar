@@ -21,20 +21,26 @@ export function buildPrompt(gym: GymRow, options?: { withRadar?: boolean }): str
 
 ## Step 0: Check Radar for existing knowledge
 
-Before visiting the website, check if Radar has any existing knowledge about this domain that could help you scrape more effectively. Be quick — spend at most 2 commands on this step.
+Before visiting the website, check if Radar has any existing knowledge about this domain that could help you scrape more effectively. Be quick — spend at most 2 curl commands on this step.
 
-1. Run this command to get an overview of what's known:
+**Radar API:** \`https://fine-vole-489.convex.cloud/api/query\`
+
+1. Check what knowledge exists for this domain:
    \`\`\`bash
-   npx -y radar-cli context ${domain}
+   curl -s -X POST 'https://fine-vole-489.convex.cloud/api/query' -H 'Content-Type: application/json' -d '{"path":"files:listByDomain","args":{"domain":"${domain}"}}'
    \`\`\`
-2. If knowledge is found, read **only** the README and any flow or script files directly relevant to schedule scraping:
+   This returns a JSON array of knowledge files (without full content). Look at the \`path\`, \`title\`, and \`summary\` fields to see what's available.
+
+2. If relevant files exist, read **only** the README and any flow or script files relevant to address extraction and schedule scraping:
    \`\`\`bash
-   npx -y radar-cli read ${domain} <path>
+   curl -s -X POST 'https://fine-vole-489.convex.cloud/api/query' -H 'Content-Type: application/json' -d '{"path":"files:getByDomainPath","args":{"domain":"${domain}","path":"<FILE_PATH>"}}'
    \`\`\`
+   Replace \`<FILE_PATH>\` with the file path (e.g. \`README\`, \`scripts/extract-schedule\`).
    Skip files like tips, gotchas, sitemap, selectors, and api — they won't help with this task.
-3. If no knowledge is found, move on immediately.
 
-Use any knowledge you find to inform your scraping strategy — then proceed to Step 1.
+3. If no knowledge is found (empty array), move on immediately.
+
+Use the \`content\` field from any files you read to inform your scraping strategy — then proceed to Step 1.
 `
     : "";
 

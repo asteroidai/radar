@@ -252,57 +252,6 @@ function main(): void {
     </div>`;
   }
 
-  // Chart data
-  const maxCostAll = Math.max(...venueIds.map((id) => Math.max(cost(mapA.get(id)!), cost(mapB.get(id)!))), 0.001);
-  const maxDurAll = Math.max(...venueIds.map((id) => Math.max(duration(mapA.get(id)!), duration(mapB.get(id)!))), 1);
-
-  let costChartRows = "";
-  let latencyChartRows = "";
-  for (const id of venueIds) {
-    const a = mapA.get(id)!;
-    const b = mapB.get(id)!;
-    const cA = cost(a), cB = cost(b);
-    const dA = duration(a), dB = duration(b);
-
-    costChartRows += `
-    <div class="chart-row">
-      <span class="chart-label">${esc(a.venueName)}</span>
-      <div class="chart-bars">
-        <div class="bar-line">
-          <div class="bar-track">
-            <div class="bar-fill bar-a" style="width:${((cA / maxCostAll) * 100).toFixed(1)}%"></div>
-          </div>
-          <span class="bar-value">$${cA.toFixed(2)}</span>
-        </div>
-        <div class="bar-line">
-          <div class="bar-track">
-            <div class="bar-fill bar-b" style="width:${((cB / maxCostAll) * 100).toFixed(1)}%"></div>
-          </div>
-          <span class="bar-value">$${cB.toFixed(2)}</span>
-        </div>
-      </div>
-    </div>`;
-
-    latencyChartRows += `
-    <div class="chart-row">
-      <span class="chart-label">${esc(a.venueName)}</span>
-      <div class="chart-bars">
-        <div class="bar-line">
-          <div class="bar-track">
-            <div class="bar-fill bar-a-lat" style="width:${((dA / maxDurAll) * 100).toFixed(1)}%"></div>
-          </div>
-          <span class="bar-value">${formatDuration(dA)}</span>
-        </div>
-        <div class="bar-line">
-          <div class="bar-track">
-            <div class="bar-fill bar-b-lat" style="width:${((dB / maxDurAll) * 100).toFixed(1)}%"></div>
-          </div>
-          <span class="bar-value">${formatDuration(dB)}</span>
-        </div>
-      </div>
-    </div>`;
-  }
-
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -370,23 +319,6 @@ function main(): void {
   table.compact td { padding: 4px 8px; border-bottom: 1px solid #2c2c2e; color: #d1d1d6; }
   table.compact tr:last-child td { border-bottom: none; }
 
-  .chart-legend { display: flex; gap: 20px; margin-bottom: 14px; font-size: 0.82em; color: #aeaeb2; }
-  .chart-legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .chart-legend .leg-a-cost::before { background: #ff9f0a; }
-  .chart-legend .leg-b-cost::before { background: #bf5af2; }
-  .chart-legend .leg-a-lat::before { background: #ff9f0a; opacity: 0.5; }
-  .chart-legend .leg-b-lat::before { background: #bf5af2; opacity: 0.5; }
-  .chart-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
-  .chart-label { width: 220px; font-size: 0.88em; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; color: #d1d1d6; padding-top: 2px; }
-  .chart-bars { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-  .bar-line { display: flex; align-items: center; gap: 8px; }
-  .bar-track { flex: 1; height: 14px; background: #2c2c2e; border-radius: 4px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; min-width: 2px; }
-  .bar-a { background: linear-gradient(90deg, #e08600, #ff9f0a); }
-  .bar-b { background: linear-gradient(90deg, #9b3fd4, #bf5af2); }
-  .bar-a-lat { background: linear-gradient(90deg, #e08600, #ff9f0a); opacity: 0.5; }
-  .bar-b-lat { background: linear-gradient(90deg, #9b3fd4, #bf5af2); opacity: 0.5; }
-  .bar-value { width: 80px; font-size: 0.8em; color: #8e8e93; flex-shrink: 0; }
 
   @media (max-width: 768px) {
     .summary { flex-direction: column; }
@@ -474,20 +406,6 @@ function main(): void {
       ${comparisonRows}
     </tbody>
   </table>
-
-  <div class="section-title">Cost</div>
-  <div class="chart-legend">
-    <span class="leg-a-cost">A</span>
-    <span class="leg-b-cost">B</span>
-  </div>
-  ${costChartRows}
-
-  <div class="section-title">Latency</div>
-  <div class="chart-legend">
-    <span class="leg-a-lat">A</span>
-    <span class="leg-b-lat">B</span>
-  </div>
-  ${latencyChartRows}
 
   <div class="section-title">Gym Details</div>
   ${detailCards}
