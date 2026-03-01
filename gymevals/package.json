@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx --env-file=.env src/run.ts",
-    "start:radar": "tsx --env-file=.env src/run.ts --with-radar"
+    "start:radar": "tsx --env-file=.env src/run.ts --with-radar",
+    "compare": "tsx src/compare.ts"
   },
   "dependencies": {
     "browser-use-sdk": "^3.1.0",

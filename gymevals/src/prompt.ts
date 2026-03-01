@@ -21,19 +21,20 @@ export function buildPrompt(gym: GymRow, options?: { withRadar?: boolean }): str
 
 ## Step 0: Check Radar for existing knowledge
 
-Before visiting the website, check if Radar has any existing knowledge about this domain that could help you scrape more effectively.
+Before visiting the website, check if Radar has any existing knowledge about this domain that could help you scrape more effectively. Be quick — spend at most 2 commands on this step.
 
-1. Run this command in bash to get an overview:
+1. Run this command to get an overview of what's known:
    \`\`\`bash
    npx -y radar-cli context ${domain}
    \`\`\`
-2. If knowledge is found, read the most relevant files (especially README, tips, gotchas, sitemap, and any flow/selectors files) using:
+2. If knowledge is found, read **only** the README and any flow or script files directly relevant to schedule scraping:
    \`\`\`bash
    npx -y radar-cli read ${domain} <path>
    \`\`\`
-   For example: \`npx -y radar-cli read ${domain} README\`, \`npx -y radar-cli read ${domain} tips\`, etc.
-3. Use any knowledge you find to inform your scraping strategy — it may contain useful information about the site's structure, schedule widget type, navigation patterns, or known gotchas.
-4. If no knowledge is found, that's fine — proceed normally.
+   Skip files like tips, gotchas, sitemap, selectors, and api — they won't help with this task.
+3. If no knowledge is found, move on immediately.
+
+Use any knowledge you find to inform your scraping strategy — then proceed to Step 1.
 `
     : "";
 
