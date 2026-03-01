@@ -8,8 +8,9 @@ import {
   Plus,
   FileText,
   ExternalLink,
-  Eye,
   Play,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { ExploreModal } from "@/components/ExploreModal";
 import type { Doc } from "../../../../convex/_generated/dataModel";
@@ -30,13 +31,55 @@ const statusConfig: Record<
   failed: { dot: "bg-red-500", label: "Failed", bg: "bg-red-50 text-red-700" },
 };
 
-function BrowserUseLink({
-  sessionId,
-  running,
+function LivePreview({
+  liveUrl,
+  expanded,
+  onToggle,
 }: {
-  sessionId: string;
-  running: boolean;
+  liveUrl: string;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
+  if (expanded) {
+    return (
+      <div className="relative overflow-hidden rounded-md border border-zinc-200 bg-zinc-900">
+        <iframe
+          src={liveUrl}
+          sandbox="allow-same-origin allow-scripts"
+          allow="clipboard-read; clipboard-write"
+          className="h-96 w-full"
+          style={{ pointerEvents: "none" }}
+        />
+        <button
+          onClick={onToggle}
+          className="absolute right-1.5 bottom-1.5 rounded bg-black/60 p-1 text-white/70 transition-colors hover:text-white"
+        >
+          <Minimize2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="relative h-20 w-36 cursor-pointer overflow-hidden rounded-md border border-zinc-200 bg-zinc-900"
+      onClick={onToggle}
+    >
+      <iframe
+        src={liveUrl}
+        sandbox="allow-same-origin allow-scripts"
+        allow="clipboard-read; clipboard-write"
+        className="h-[400%] w-[400%] origin-top-left scale-25"
+        style={{ pointerEvents: "none" }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity hover:bg-black/30 hover:opacity-100">
+        <Maximize2 className="h-4 w-4 text-white" />
+      </div>
+    </div>
+  );
+}
+
+function ReplayLink({ sessionId }: { sessionId: string }) {
   const url = `https://cloud.browser-use.com/experimental/session/${sessionId}`;
   return (
     <a
@@ -45,17 +88,8 @@ function BrowserUseLink({
       rel="noopener noreferrer"
       className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
     >
-      {running ? (
-        <>
-          <Eye className="h-3 w-3 text-amber-500" />
-          Watch live
-        </>
-      ) : (
-        <>
-          <Play className="h-3 w-3 text-emerald-500" />
-          View replay
-        </>
-      )}
+      <Play className="h-3 w-3 text-emerald-500" />
+      View replay
       <ExternalLink className="h-3 w-3" />
     </a>
   );
@@ -63,6 +97,16 @@ function BrowserUseLink({
 
 function ExplorationCard({ exploration }: { exploration: Exploration }) {
   const config = statusConfig[exploration.status];
+  const [expanded, setExpanded] = useState(false);
+  const liveFileCount = useQuery(api.files.countByDomain, {
+    domain: exploration.domain,
+  });
+
+  const isRunning = exploration.status === "running";
+  const isDone =
+    exploration.status === "completed" || exploration.status === "failed";
+
+  const showLive = isRunning && !!exploration.liveUrl;
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-sm">
@@ -88,15 +132,32 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
             </p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-3">
-          {exploration.sessionId && (
-            <BrowserUseLink
-              sessionId={exploration.sessionId}
-              running={exploration.status === "running"}
+
+        {/* Thumbnail preview (small, right-aligned) or replay link */}
+        <div className="flex shrink-0 items-center">
+          {showLive && !expanded && (
+            <LivePreview
+              liveUrl={exploration.liveUrl!}
+              expanded={false}
+              onToggle={() => setExpanded(true)}
             />
+          )}
+          {isDone && exploration.sessionId && (
+            <ReplayLink sessionId={exploration.sessionId} />
           )}
         </div>
       </div>
+
+      {/* Expanded preview (full width, below the header) */}
+      {showLive && expanded && (
+        <div className="mt-3">
+          <LivePreview
+            liveUrl={exploration.liveUrl!}
+            expanded={true}
+            onToggle={() => setExpanded(false)}
+          />
+        </div>
+      )}
 
       <div className="mt-3 flex items-center gap-4 text-xs text-zinc-400">
         <span>
@@ -111,7 +172,7 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
         )}
         <span className="flex items-center gap-1">
           <FileText className="h-3 w-3" />
-          {exploration.filesGenerated ?? 0} files
+          {liveFileCount ?? 0} files
         </span>
       </div>
 

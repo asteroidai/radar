@@ -120,6 +120,7 @@ export default defineSchema({
       v.literal("failed"),
     ),
     sessionId: v.optional(v.string()),
+    liveUrl: v.optional(v.string()),
     filesGenerated: v.optional(v.number()),
     resultSummary: v.optional(v.string()),
     startedAt: v.number(),

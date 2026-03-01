@@ -1,6 +1,17 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
+export const countByDomain = query({
+  args: { domain: v.string() },
+  handler: async (ctx, args) => {
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_domain_path", (q) => q.eq("domain", args.domain))
+      .collect();
+    return files.length;
+  },
+});
+
 export const listBySite = query({
   args: { siteId: v.id("sites") },
   handler: async (ctx, args) => {

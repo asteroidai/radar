@@ -56,17 +56,38 @@ export const run = internalAction({
 
     const startTime = Date.now();
 
-    // Poll for sessionId so the frontend can show a live preview link early
+    // Poll for sessionId, then keep polling for liveUrl
     (async () => {
+      // Phase 1: wait for sessionId (up to 10s)
       for (let i = 0; i < 10; i++) {
         await new Promise((r) => setTimeout(r, 1_000));
-        if (run.sessionId) {
-          await ctx.runMutation(internal.explorations._updateStatus, {
-            id: args.explorationId,
-            status: "running",
-            sessionId: run.sessionId,
-          });
-          return;
+        if (run.sessionId) break;
+      }
+      if (!run.sessionId) return;
+
+      // Store sessionId immediately so the dashboard link works
+      await ctx.runMutation(internal.explorations._updateStatus, {
+        id: args.explorationId,
+        status: "running",
+        sessionId: run.sessionId,
+      });
+
+      // Phase 2: poll for liveUrl (up to 30s, every 2s)
+      for (let i = 0; i < 15; i++) {
+        await new Promise((r) => setTimeout(r, 2_000));
+        try {
+          const session = await client.sessions.get(run.sessionId);
+          if (session.liveUrl) {
+            await ctx.runMutation(internal.explorations._updateStatus, {
+              id: args.explorationId,
+              status: "running",
+              sessionId: run.sessionId,
+              liveUrl: session.liveUrl,
+            });
+            return;
+          }
+        } catch {
+          // best-effort
         }
       }
     })();
