@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 
-const INSTALL_CMD = "npx -y @anthropic/mcp-server-radar";
+const INSTALL_CMD = "npx skills add asteroidai/radar";
 
 export function TerminalWidget() {
   const [copied, setCopied] = useState(false);
