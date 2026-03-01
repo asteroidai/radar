@@ -2,37 +2,17 @@ export function AsteroidIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
+      viewBox="0 0 300 300"
       className={className}
     >
-      {/* Asteroid/meteor shape */}
-      <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.9" />
-      <circle cx="10" cy="10.5" r="1.2" fill="currentColor" opacity="0.4" />
-      <circle cx="14" cy="12.5" r="0.8" fill="currentColor" opacity="0.4" />
-      <circle cx="11.5" cy="14" r="0.6" fill="currentColor" opacity="0.3" />
-      {/* Trail */}
-      <path
-        d="M16 8 L20 4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity="0.6"
-      />
-      <path
-        d="M17 10 L21 7"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.4"
-      />
-      <path
-        d="M15.5 7 L18 4.5"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.4"
-      />
+      <g
+        transform="translate(0,300) scale(0.1,-0.1)"
+        fill="currentColor"
+        stroke="none"
+      >
+        <path d="M1112 1963 c-88 -159 -275 -494 -415 -745 l-255 -457 43 17 c203 81 2022 828 2021 830 -2 1 -87 -18 -191 -43 -103 -25 -193 -44 -199 -42 -6 3 -101 167 -211 365 l-200 361 -217 1 -216 0 -160 -287z m706 -518 c-6 -5 -791 -195 -794 -193 -2 3 424 748 449 786 6 9 64 -85 178 -289 93 -166 168 -303 167 -304z" />
+        <path d="M2053 1326 c-67 -28 -124 -53 -127 -56 -3 -3 57 -118 133 -255 l138 -250 175 -3 176 -2 -178 307 c-98 169 -182 308 -186 309 -5 1 -64 -22 -131 -50z" />
+      </g>
     </svg>
   );
 }
@@ -41,35 +21,26 @@ export function BrowserUseIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      viewBox="0 0 100 100"
       fill="none"
       className={className}
     >
-      {/* Browser window */}
-      <rect
-        x="3"
-        y="4"
-        width="18"
-        height="16"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.5"
+      <path
+        d="M97.8916 39.0448C82.6177 33.1997 95.2199 10.8169 74.212 11.3849C48.5413 12.0793 8.31528 52.4518 12.4236 78.6851C14.4652 91.6755 24.6096 86.2218 29.3732 88.1154C32.5364 89.3652 36.2792 95.0083 40.3245 95.9047C22.4293 106.193 -0.556809 96.397 0.0102912 74.3423C0.829435 41.86 47.7474 -5.25386 81.1937 0.477571C99.8702 3.68414 102.189 23.5422 97.8916 39.0448Z"
+        fill="currentColor"
       />
-      {/* Title bar */}
-      <line
-        x1="3"
-        y1="9"
-        x2="21"
-        y2="9"
-        stroke="currentColor"
-        strokeWidth="1.5"
+      <path
+        d="M24.8115 57.7541L39.6068 71.7166C49.0332 80.1875 74.061 94.9706 85.403 84.9469C98.774 73.1306 70.495 32.3162 57.4769 25.802L68.9069 20.6639C86.7138 33.6796 113.783 75.9836 91.7294 94.4025C77.5014 106.282 54.5655 96.2204 41.0811 87.3707C30.8103 80.6294 15.9647 70.9591 24.8115 57.7415V57.7541Z"
+        fill="currentColor"
       />
-      {/* Dots */}
-      <circle cx="6.5" cy="6.5" r="0.8" fill="currentColor" />
-      <circle cx="9" cy="6.5" r="0.8" fill="currentColor" />
-      <circle cx="11.5" cy="6.5" r="0.8" fill="currentColor" />
-      {/* Play triangle */}
-      <path d="M10.5 13 L10.5 17.5 L15 15.25 Z" fill="currentColor" />
+      <path
+        d="M40.3373 4.75723C35.5485 4.88347 31.8055 11.1199 28.2895 12.2182C25.1642 13.1903 20.8414 10.5266 16.1408 14.0487C11.0495 17.8613 12.7891 36.0655 3.02233 40.5976C-2.98893 22.9362 0.75354 1.8789 22.4672 0.0736228C24.1433 -0.0652445 42.7822 1.17195 40.3373 4.74463V4.75723Z"
+        fill="currentColor"
+      />
+      <path
+        d="M76.1025 57.754C84.1175 71.0348 69.5871 86.2092 57.489 74.1025L76.1025 57.754Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }
