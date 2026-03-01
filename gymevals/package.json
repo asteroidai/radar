@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "sample": "tsx src/sample.ts",
     "start": "tsx --env-file=.env src/run.ts",
-    "start:radar": "tsx --env-file=.env src/run.ts --with-radar",
     "compare": "tsx src/compare.ts"
   },
   "dependencies": {

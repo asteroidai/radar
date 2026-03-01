@@ -1,5 +1,4 @@
 import { BrowserUse } from "browser-use-sdk/v3";
-import { parse } from "csv-parse/sync";
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,7 +7,6 @@ import { buildPrompt, type GymRow } from "./prompt.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
-const CSV_PATH = resolve(ROOT, "gyms.csv");
 
 function makeRunDir(): string {
   const now = new Date();
@@ -20,8 +18,6 @@ function makeRunDir(): string {
 
 const CONCURRENCY = 5;
 
-const DEFAULT_COUNT = 10;
-
 function slugify(name: string): string {
   return name
     .toLowerCase()
@@ -29,41 +25,23 @@ function slugify(name: string): string {
     .replace(/^_|_$/g, "");
 }
 
-function parseArgInt(flag: string): number | undefined {
+function parseArgValue(flag: string): string | undefined {
   const idx = process.argv.indexOf(flag);
   if (idx === -1 || idx + 1 >= process.argv.length) return undefined;
-  const val = parseInt(process.argv[idx + 1]!, 10);
-  return Number.isNaN(val) ? undefined : val;
+  return process.argv[idx + 1];
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j]!, a[i]!];
+function loadSample(): GymRow[] {
+  const samplePath = parseArgValue("--sample");
+  if (!samplePath) {
+    console.error("Missing --sample flag. Provide a sample file.");
+    console.error("Usage: tsx src/run.ts --sample <path-to-sample.json> [--with-radar]");
+    console.error("\nGenerate a sample first: tsx src/sample.ts 10");
+    process.exit(1);
   }
-  return a;
-}
 
-function parseCSV(): GymRow[] {
-  const raw = readFileSync(CSV_PATH, "utf-8");
-  const records: Record<string, string>[] = parse(raw, {
-    columns: true,
-    skip_empty_lines: true,
-    relax_column_count: true,
-  });
-
-  const count = parseArgInt("--count") ?? DEFAULT_COUNT;
-
-  const allGyms = records
-    .filter((row) => row["Venue ID"] && row["Website"])
-    .map((row) => ({
-      venueId: row["Venue ID"]!,
-      venueName: row["Venue Name"]!,
-      website: row["Website"]!,
-    }));
-
-  return shuffle(allGyms).slice(0, count);
+  const resolved = resolve(samplePath);
+  return JSON.parse(readFileSync(resolved, "utf-8"));
 }
 
 function decodeHtmlEntities(text: string): string {
@@ -460,8 +438,8 @@ async function main(): Promise<void> {
 
   const runDir = makeRunDir();
 
-  const gyms = parseCSV();
-  console.log(`Loaded ${gyms.length} gyms from CSV`);
+  const gyms = loadSample();
+  console.log(`Loaded ${gyms.length} gyms from sample`);
   console.log(`Concurrency: ${CONCURRENCY}`);
   console.log(`Radar knowledge: ${withRadar ? "enabled" : "disabled"}`);
   console.log(`Results dir: ${runDir}\n`);
