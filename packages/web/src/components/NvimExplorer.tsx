@@ -4,14 +4,14 @@ import { api } from "../../../../convex/_generated/api";
 import { FileText, Folder } from "lucide-react";
 import { MarkdownViewer } from "./MarkdownViewer";
 
-interface TreeNode {
+export interface TreeNode {
   name: string;
   domain?: string;
   filePath?: string;
   children?: TreeNode[];
 }
 
-function buildFileNodes(
+export function buildFileNodes(
   domain: string,
   files: { path: string }[],
 ): TreeNode[] {

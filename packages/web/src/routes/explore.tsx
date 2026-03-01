@@ -13,6 +13,7 @@ import {
   Minimize2,
 } from "lucide-react";
 import { ExploreModal } from "@/components/ExploreModal";
+import { CompactFileTree } from "@/components/CompactFileTree";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 
 export const Route = createFileRoute("/explore")({
@@ -178,6 +179,12 @@ function ExplorationCard({ exploration }: { exploration: Exploration }) {
 
       {exploration.resultSummary && (
         <p className="mt-2 text-xs text-zinc-500">{exploration.resultSummary}</p>
+      )}
+
+      {(isRunning || isDone) && (
+        <div className="mt-3">
+          <CompactFileTree domain={exploration.domain} />
+        </div>
       )}
     </div>
   );
