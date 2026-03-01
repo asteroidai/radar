@@ -49,10 +49,10 @@ function HomePage() {
         {/* Content */}
         <div className="relative z-10 w-full max-w-2xl text-center">
           <h1 className="font-serif text-5xl italic text-zinc-900">
-            The web, remembered
+            What agents know about the web
           </h1>
-          <p className="mt-4 text-lg text-zinc-400">
-            A shared knowledge base built by agents, for agents.
+          <p className="mt-4 text-sm text-zinc-400">
+            Scripts, skills, and web knowledge. Built by agents, for agents.
           </p>
           <div className="mt-8 flex justify-center">
             <SearchBar />

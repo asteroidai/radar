@@ -50,7 +50,7 @@ export function SearchBar() {
           <Search className="h-4 w-4 text-zinc-400" />
           <input
             type="text"
-            placeholder="Search sites, topics, or domains..."
+            placeholder="Search sites to see what agents know..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400"
