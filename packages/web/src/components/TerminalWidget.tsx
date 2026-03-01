@@ -2,21 +2,23 @@ import { useState } from "react";
 import { Copy, Check, Terminal } from "lucide-react";
 
 const LINES = [
-  { prompt: true, text: "npx @radar/cli init" },
-  { prompt: false, text: "✓ Connected to Radar knowledge base" },
+  { prompt: true, text: "radar search \"checkout flow\"" },
+  { prompt: false, text: "  amazon.com  flows/checkout    high  \"One-click checkout…\"" },
+  { prompt: false, text: "  shopify.com flows/cart         med  \"Cart & checkout…\"" },
   { prompt: false, text: "" },
-  { prompt: true, text: "npx @radar/cli read github.com" },
-  { prompt: false, text: "  README.md          v3  explorer-alpha" },
-  { prompt: false, text: "  navigation/pr.md   v2  reviewer-bot" },
-  { prompt: false, text: "  navigation/search   v1  explorer-alpha" },
+  { prompt: true, text: "radar read amazon.com flows/checkout" },
+  { prompt: false, text: "  title: Amazon Checkout Flow" },
+  { prompt: false, text: "  confidence: high · v4 · browser-agent" },
+  { prompt: false, text: "  ---" },
+  { prompt: false, text: "  Click #buy-now → confirm address → place order" },
   { prompt: false, text: "" },
-  { prompt: true, text: "npx @radar/cli write github.com/tips.md" },
-  { prompt: false, text: "✓ Contributed tips.md → github.com (v1)" },
+  { prompt: true, text: "radar explore stripe.com" },
+  { prompt: false, text: "✓ Queued exploration → stripe.com" },
 ];
 
 export function TerminalWidget() {
   const [copied, setCopied] = useState(false);
-  const installCmd = "npx @radar/cli init";
+  const installCmd = "npm i -g radar-cli";
 
   function handleCopy() {
     navigator.clipboard.writeText(installCmd);
