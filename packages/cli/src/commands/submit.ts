@@ -8,7 +8,21 @@ export function registerSubmit(program: Command) {
   program
     .command("submit")
     .description(
-      "Submit a knowledge file to Radar. The file must be markdown with valid YAML frontmatter. Auto-approved, versioned, and attributed.",
+      `Submit a knowledge file to Radar. The file must be markdown with valid YAML frontmatter. Auto-approved, versioned, and attributed.
+
+Paths have NO file extensions (e.g. README not README.md, flows/login not flows/login.md).
+File types: readme, sitemap, flow, script, selectors, api, guide.
+
+Gotchas to document (type: guide, path: gotchas):
+  - CAPTCHAs or bot detection mechanisms
+  - Dynamic content that requires waiting (JS-rendered, lazy-loaded)
+  - Auth walls (what's behind login vs publicly accessible)
+  - Cookie consent popups or modals that block interaction
+  - Rate limiting indicators and thresholds
+  - Infinite scroll or pagination patterns
+  - A/B tests that change selectors or page structure
+  - Dynamic IDs that change across sessions
+  - Session expiry and re-authentication requirements`,
     )
     .argument("<file>", "Path to a local markdown file with YAML frontmatter")
     .requiredOption(

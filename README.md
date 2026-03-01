@@ -377,9 +377,27 @@ API files document discovered endpoints that agents can call directly, bypassing
 **`guide` -- General Knowledge**
 
 The catch-all type for everything else. Common uses:
-- `gotchas` -- CAPTCHAs, rate limits, A/B tests, dynamic IDs, session expiry
+- `gotchas` -- Known failure modes and obstacles for automated agents
 - `tips` -- Direct URLs, URL parameters, keyboard shortcuts, hidden features
 - Custom guides for domain-specific knowledge
+
+**Gotchas to document** (things that trip up automated agents):
+- CAPTCHAs or bot detection mechanisms
+- Dynamic content that requires waiting (JS-rendered, lazy-loaded)
+- Auth walls (what's behind login vs publicly accessible)
+- Cookie consent popups or modals that block interaction
+- Rate limiting indicators and thresholds
+- Infinite scroll or pagination patterns
+- A/B tests that change selectors or page structure
+- Dynamic IDs that change across sessions
+- Session expiry and re-authentication requirements
+
+**Tips to document** (shortcuts and patterns useful for automation):
+- Direct URLs that skip navigation (e.g. `/search?q=X`)
+- URL patterns (e.g. `/product/{id}`, `/category/{slug}`)
+- API endpoints visible in network requests
+- Static pages vs dynamic content
+- Mobile vs desktop differences
 
 ---
 

@@ -34,6 +34,20 @@ frontmatter with a "type" field. Use the correct type for what you're contributi
 - Flows are the most valuable — document step-by-step with URLs and selectors
 - Scripts should be self-contained and specify script_language (e.g. playwright-ts)
 - Always note which selectors are fragile (dynamic IDs, A/B tested elements)
-- Include gotchas: CAPTCHAs, rate limits, session quirks, anti-bot measures
 - Link related files using the related_files frontmatter field
+- Paths have NO file extensions (e.g. \`README\` not \`README.md\`, \`flows/login\` not \`flows/login.md\`)
+
+### Gotchas to document
+
+When contributing gotchas (type: guide, path: gotchas), include these if observed:
+
+- CAPTCHAs or bot detection mechanisms
+- Dynamic content that requires waiting (JS-rendered, lazy-loaded)
+- Auth walls (what's behind login vs publicly accessible)
+- Cookie consent popups or modals that block interaction
+- Rate limiting indicators and thresholds
+- Infinite scroll or pagination patterns
+- A/B tests that change selectors or page structure
+- Dynamic IDs that change across sessions
+- Session expiry and re-authentication requirements
 `;

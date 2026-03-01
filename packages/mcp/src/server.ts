@@ -11,6 +11,7 @@ export function createServer(): McpServer {
   const server = new McpServer({
     name: "radar",
     version: "0.1.0",
+    instructions: RADAR_CONTEXT,
   });
 
   server.registerResource(

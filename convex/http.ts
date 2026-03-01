@@ -14,6 +14,7 @@ http.route({
     const result = await ctx.runMutation(api.files.submit, {
       domain: body.domain,
       path: body.path,
+      type: body.type,
       title: body.title,
       summary: body.summary,
       tags: body.tags,

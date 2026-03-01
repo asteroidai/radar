@@ -12,7 +12,8 @@ export function buildPrompt(
 
   const jsonSchema = `{
   "domain": "${domain}",
-  "path": "<file path, e.g. README.md or flows/checkout.md>",
+  "path": "<file path, e.g. README or flows/checkout>",
+  "type": "<readme|sitemap|flow|script|selectors|api|guide>",
   "title": "<descriptive title>",
   "summary": "<1-2 sentence summary, max 300 chars>",
   "tags": ["<tag1>", "<tag2>"],
@@ -115,33 +116,81 @@ ${curlTemplate}
 ${jsonSchema}
 \`\`\`
 
+### Canonical directory structure
+
+Every domain follows this canonical file structure. Paths have NO file extensions.
+
+\`\`\`
+<domain>/
+  README                   # Domain overview (type: readme)
+  sitemap                  # High-level page map with URLs (type: sitemap)
+  flows/                   # Step-by-step task procedures (type: flow)
+    login
+    search
+    checkout
+    ...
+  scripts/                 # Reusable automation code (type: script)
+    fill-login-form
+    add-to-cart
+    ...
+  selectors/               # CSS/XPath selector catalogs (type: selectors)
+    global
+    checkout-form
+    ...
+  api/                     # Discovered API endpoints (type: api)
+    rest-endpoints
+    graphql-schema
+    ...
+  gotchas                  # Anti-patterns, obstacles (type: guide)
+  tips                     # Agent shortcuts (type: guide)
+\`\`\`
+
 ### Files to submit
 
 Submit the following files (adapt based on what you actually found):
 
-1. **README.md** — Site overview in llms.txt format
-   - path: \`README.md\`
-   - Include: site name, purpose, key URLs, tech stack observations
+1. **README** — Site overview in llms.txt format
+   - path: \`README\`, type: \`readme\`
+   - Include: site name, purpose, key URLs, tech stack observations, links to all other files
    - intent.coreQuestion: "What is this website and what can you do on it?"
 
-2. **navigation/sitemap.md** — Pages and URLs discovered
-   - path: \`navigation/sitemap.md\`
+2. **sitemap** — Pages and URLs discovered
+   - path: \`sitemap\`, type: \`sitemap\`
    - Include: all discovered pages with URLs, organized by section
    - intent.coreQuestion: "What pages exist on this site and how are they organized?"
 
-3. **flows/<slug>.md** — One file per discovered user flow
-   - path: \`flows/<slug>.md\` (e.g. \`flows/search.md\`, \`flows/login.md\`)
+3. **flows/<slug>** — One file per discovered user flow
+   - path: \`flows/<slug>\` (e.g. \`flows/search\`, \`flows/login\`)
+   - type: \`flow\`
    - Include: step-by-step instructions, URLs, form fields, expected outcomes
    - intent.coreQuestion: "How do I complete <flow name> on this site?"
 
-4. **gotchas.md** — Known issues for automated agents
-   - path: \`gotchas.md\`
+4. **scripts/<slug>** — Reusable automation code (if you find automatable interactions)
+   - path: \`scripts/<slug>\` (e.g. \`scripts/fill-login-form\`)
+   - type: \`script\`
+   - Include: ready-to-execute code, specify language in content
+   - intent.coreQuestion: "How do I automate <action> on this site?"
+
+5. **selectors/<slug>** — CSS/XPath selector catalogs (if you find pages with many interactive elements)
+   - path: \`selectors/<slug>\` (e.g. \`selectors/global\`, \`selectors/checkout-form\`)
+   - type: \`selectors\`
+   - Include: selectors grouped by section, note fragile ones (dynamic IDs, A/B tested)
+   - intent.coreQuestion: "What are the key selectors for <page/feature> on this site?"
+
+6. **api/<slug>** — Discovered API endpoints (if visible in network requests)
+   - path: \`api/<slug>\` (e.g. \`api/rest-endpoints\`)
+   - type: \`api\`
+   - Include: full URLs, HTTP methods, request/response shapes, auth requirements
+   - intent.coreQuestion: "What API endpoints does this site expose?"
+
+7. **gotchas** — Known issues for automated agents
+   - path: \`gotchas\`, type: \`guide\`
    - Include: CAPTCHAs, auth walls, dynamic content, popups, rate limits
    - intent.coreQuestion: "What obstacles might an agent encounter on this site?"
    - tags should include "gotchas", "obstacles"
 
-5. **tips.md** — Agent shortcuts and useful patterns
-   - path: \`tips.md\`
+8. **tips** — Agent shortcuts and useful patterns
+   - path: \`tips\`, type: \`guide\`
    - Include: direct URLs, URL patterns, API endpoints, useful selectors
    - intent.coreQuestion: "What shortcuts and patterns can an agent use on this site?"
    - tags should include "tips", "shortcuts"
@@ -149,10 +198,12 @@ Submit the following files (adapt based on what you actually found):
 ### Submission rules
 
 - Submit ALL files, even if some have limited content
+- Paths have NO file extensions (e.g. \`README\` not \`README.md\`, \`flows/login\` not \`flows/login.md\`)
+- Always set the \`type\` field to match the file's purpose (readme, sitemap, flow, script, selectors, api, guide)
 - Set \`confidence\` to "high" for things you verified directly, "medium" for reasonable inferences, "low" for guesses
 - Set \`requiresAuth\` to true only for files describing auth-gated content
 - The \`content\` field should contain full markdown — write thorough, useful documentation
-- Include \`relatedFiles\` references between files (e.g. a flow file should reference README.md)
+- Include \`relatedFiles\` references between files (e.g. a flow file should reference \`README\`)
 - Every \`entities.primary\` should be the site name or domain
 - After submitting each file, verify the curl returned a successful response (you should get back a JSON with fileId, version, and pointsAwarded)
 - If a curl fails, check the error and retry with corrected data
