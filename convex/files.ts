@@ -36,6 +36,16 @@ export const listByDomain = query({
   },
 });
 
+export const listByDomainWithContent = query({
+  args: { domain: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("files")
+      .withIndex("by_domain_path", (q) => q.eq("domain", args.domain))
+      .collect();
+  },
+});
+
 export const listAll = query({
   args: {},
   handler: async (ctx) => {

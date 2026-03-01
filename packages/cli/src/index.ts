@@ -5,6 +5,7 @@ import { registerList } from "./commands/list.js";
 import { registerSearch } from "./commands/search.js";
 import { registerSubmit } from "./commands/submit.js";
 import { registerExplore } from "./commands/explore.js";
+import { registerDownload } from "./commands/download.js";
 
 const program = new Command();
 
@@ -21,5 +22,6 @@ registerList(program);
 registerSearch(program);
 registerSubmit(program);
 registerExplore(program);
+registerDownload(program);
 
 program.parse();
