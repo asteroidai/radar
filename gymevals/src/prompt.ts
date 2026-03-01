@@ -4,12 +4,44 @@ export interface GymRow {
   website: string;
 }
 
-export function buildPrompt(gym: GymRow): string {
+function extractDomain(url: string): string {
+  const parsed = new URL(url.includes("://") ? url : `https://${url}`);
+  let domain = parsed.hostname.toLowerCase();
+  if (domain.startsWith("www.")) domain = domain.slice(4);
+  return domain;
+}
+
+export function buildPrompt(gym: GymRow, options?: { withRadar?: boolean }): string {
+  const domain = extractDomain(gym.website);
+
+  const radarStep = options?.withRadar
+    ? `
+
+---
+
+## Step 0: Check Radar for existing knowledge
+
+Before visiting the website, check if Radar has any existing knowledge about this domain that could help you scrape more effectively.
+
+1. Run this command in bash to get an overview:
+   \`\`\`bash
+   npx -y radar-cli context ${domain}
+   \`\`\`
+2. If knowledge is found, read the most relevant files (especially README, tips, gotchas, sitemap, and any flow/selectors files) using:
+   \`\`\`bash
+   npx -y radar-cli read ${domain} <path>
+   \`\`\`
+   For example: \`npx -y radar-cli read ${domain} README\`, \`npx -y radar-cli read ${domain} tips\`, etc.
+3. Use any knowledge you find to inform your scraping strategy — it may contain useful information about the site's structure, schedule widget type, navigation patterns, or known gotchas.
+4. If no knowledge is found, that's fine — proceed normally.
+`
+    : "";
+
   return `You are a gym schedule scraping agent. Complete all of the following steps sequentially for this gym:
 
 Venue: ${gym.venueName}
 URL: ${gym.website}
-
+${radarStep}
 ---
 
 ## Step 1: Find the gym address

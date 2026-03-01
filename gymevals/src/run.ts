@@ -55,6 +55,8 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&quot;/g, '"');
 }
 
+const withRadar = process.argv.includes("--with-radar");
+
 async function runGym(client: BrowserUse, gym: GymRow, runDir: string): Promise<void> {
   const cleanGym: GymRow = {
     ...gym,
@@ -62,7 +64,7 @@ async function runGym(client: BrowserUse, gym: GymRow, runDir: string): Promise<
   };
 
   const slug = TARGET_VENUES[gym.venueId]!;
-  const prompt = buildPrompt(cleanGym);
+  const prompt = buildPrompt(cleanGym, { withRadar });
   console.log(`[START] ${cleanGym.venueName} (${slug})`);
 
   const startTime = Date.now();
@@ -103,6 +105,7 @@ async function runGym(client: BrowserUse, gym: GymRow, runDir: string): Promise<
           venueId: gym.venueId,
           venueName: cleanGym.venueName,
           website: gym.website,
+          withRadar,
           sessionId: run.sessionId,
           status: result.status,
           totalInputTokens: result.totalInputTokens,
@@ -152,6 +155,7 @@ async function runGym(client: BrowserUse, gym: GymRow, runDir: string): Promise<
           venueId: gym.venueId,
           venueName: cleanGym.venueName,
           website: gym.website,
+          withRadar,
           sessionId: run.sessionId,
           status: "error",
           error: message,
@@ -188,6 +192,7 @@ function generateDashboard(runDir: string): void {
   // run-2026-02-28T23-49-13Z → 2026-02-28 23:49:13 UTC
   const tsMatch = dirName.match(/^run-(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})Z$/);
   const runTimestamp = tsMatch ? `${tsMatch[1]} ${tsMatch[2]}:${tsMatch[3]}:${tsMatch[4]} UTC` : dirName;
+  const radarEnabled = results.some((r: Record<string, unknown>) => r["withRadar"] === true);
 
   // Compute totals
   const totalGyms = results.length;
@@ -390,7 +395,7 @@ function generateDashboard(runDir: string): void {
 </head>
 <body>
   <h1>Gym Eval Dashboard</h1>
-  <div class="subtitle">${esc(runTimestamp)}</div>
+  <div class="subtitle">${esc(runTimestamp)}${radarEnabled ? ' &mdash; <span style="color:#bf5af2">with Radar</span>' : ""}</div>
   <div class="summary">
     <div class="stat"><div class="val">${totalGyms}</div><div class="label">Gyms</div></div>
     <div class="stat"><div class="val">${totalClasses}</div><div class="label">Classes</div></div>
@@ -438,6 +443,7 @@ async function main(): Promise<void> {
   const gyms = parseCSV();
   console.log(`Loaded ${gyms.length} gyms from CSV`);
   console.log(`Concurrency: ${CONCURRENCY}`);
+  console.log(`Radar knowledge: ${withRadar ? "enabled" : "disabled"}`);
   console.log(`Results dir: ${runDir}\n`);
 
   const client = new BrowserUse();
