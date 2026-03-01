@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ContributionsRouteImport } from './routes/contributions'
+import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SitesDomainRouteImport } from './routes/sites.$domain'
 
@@ -30,6 +31,11 @@ const ContributionsRoute = ContributionsRouteImport.update({
   path: '/contributions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BrowseRoute = BrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const SitesDomainRoute = SitesDomainRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/browse': typeof BrowseRoute
   '/contributions': typeof ContributionsRoute
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/browse': typeof BrowseRoute
   '/contributions': typeof ContributionsRoute
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/browse': typeof BrowseRoute
   '/contributions': typeof ContributionsRoute
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -67,15 +76,23 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/browse'
     | '/contributions'
     | '/explore'
     | '/leaderboard'
     | '/sites/$domain'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contributions' | '/explore' | '/leaderboard' | '/sites/$domain'
+  to:
+    | '/'
+    | '/browse'
+    | '/contributions'
+    | '/explore'
+    | '/leaderboard'
+    | '/sites/$domain'
   id:
     | '__root__'
     | '/'
+    | '/browse'
     | '/contributions'
     | '/explore'
     | '/leaderboard'
@@ -84,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BrowseRoute: typeof BrowseRoute
   ContributionsRoute: typeof ContributionsRoute
   ExploreRoute: typeof ExploreRoute
   LeaderboardRoute: typeof LeaderboardRoute
@@ -113,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContributionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/browse': {
+      id: '/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof BrowseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -132,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BrowseRoute: BrowseRoute,
   ContributionsRoute: ContributionsRoute,
   ExploreRoute: ExploreRoute,
   LeaderboardRoute: LeaderboardRoute,

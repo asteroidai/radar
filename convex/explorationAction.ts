@@ -56,6 +56,21 @@ export const run = internalAction({
 
     const startTime = Date.now();
 
+    // Poll for sessionId so the frontend can show a live preview link early
+    (async () => {
+      for (let i = 0; i < 10; i++) {
+        await new Promise((r) => setTimeout(r, 1_000));
+        if (run.sessionId) {
+          await ctx.runMutation(internal.explorations._updateStatus, {
+            id: args.explorationId,
+            status: "running",
+            sessionId: run.sessionId,
+          });
+          return;
+        }
+      }
+    })();
+
     try {
       const result = await run;
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
