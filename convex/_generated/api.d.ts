@@ -12,6 +12,7 @@ import type * as contributions from "../contributions.js";
 import type * as contributors from "../contributors.js";
 import type * as explorations from "../explorations.js";
 import type * as files from "../files.js";
+import type * as http from "../http.js";
 import type * as seed from "../seed.js";
 import type * as sites from "../sites.js";
 
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   contributors: typeof contributors;
   explorations: typeof explorations;
   files: typeof files;
+  http: typeof http;
   seed: typeof seed;
   sites: typeof sites;
 }>;
