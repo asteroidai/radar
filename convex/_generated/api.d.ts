@@ -11,6 +11,8 @@
 import type * as backfill from "../backfill.js";
 import type * as contributions from "../contributions.js";
 import type * as contributors from "../contributors.js";
+import type * as explorationAction from "../explorationAction.js";
+import type * as explorationPrompt from "../explorationPrompt.js";
 import type * as explorations from "../explorations.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
@@ -27,6 +29,8 @@ declare const fullApi: ApiFromModules<{
   backfill: typeof backfill;
   contributions: typeof contributions;
   contributors: typeof contributors;
+  explorationAction: typeof explorationAction;
+  explorationPrompt: typeof explorationPrompt;
   explorations: typeof explorations;
   files: typeof files;
   http: typeof http;

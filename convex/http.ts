@@ -8,7 +8,8 @@ http.route({
   path: "/api/submit-file",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body = (await request.json()) as any;
 
     const result = await ctx.runMutation(api.files.submit, {
       domain: body.domain,

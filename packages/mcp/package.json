@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "start": "node dist/stdio.js",
     "start:http": "node dist/http-dev.js",
     "deploy": "wrangler deploy",
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@radar/typescript-config": "workspace:*",
     "@types/node": "^25.3.3",
+    "tsup": "^8.5.1",
     "typescript": "5.9.2",
     "wrangler": "^4.69.0"
   }
