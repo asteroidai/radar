@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Copy, Check, Terminal } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 
 type Segment = { text: string; color?: string };
 type Line = { prompt: true; cmd: string; args: Segment[] } | { prompt: false; segments: Segment[] } | { blank: true };
@@ -78,25 +78,16 @@ export function TerminalWidget() {
             <span className="h-3 w-3 rounded-full bg-zinc-700" />
             <span className="h-3 w-3 rounded-full bg-zinc-700" />
           </div>
-          <span className="ml-2 flex items-center gap-1.5 text-xs text-zinc-500">
-            <Terminal className="h-3 w-3" />
-            terminal
-          </span>
+          <span className="ml-2 flex items-center gap-1.5 text-xs text-zinc-500" />
         </div>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1 rounded px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
         >
           {copied ? (
-            <>
-              <Check className="h-3 w-3 text-emerald-500" />
-              <span className="text-emerald-500">Copied</span>
-            </>
+            <Check className="h-3 w-3 text-emerald-500" />
           ) : (
-            <>
-              <Copy className="h-3 w-3" />
-              Copy
-            </>
+            <Copy className="h-3 w-3" />
           )}
         </button>
       </div>
