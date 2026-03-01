@@ -23,6 +23,16 @@ cd packages/mcp && pnpm start
 cd packages/explorer && pnpm start https://example.com
 ```
 
+## Deploy
+
+```bash
+# Deploy Convex functions to production
+npx convex deploy
+
+# Deploy web frontend to Cloudflare Pages
+cd packages/web && pnpm run deploy
+```
+
 ### Environment Variables
 
 - `CONVEX_URL` -- Convex deployment URL (set automatically by `npx convex dev`)

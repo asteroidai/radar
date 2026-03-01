@@ -17,13 +17,14 @@
 
 ## Convex
 
-- Convex deployment: `tough-bird-920`
+- Convex deployment: `fine-vole-489`
 - Frontend env var: `VITE_CONVEX_URL` in `packages/web/.env.local`
-- Run `npx convex dev` from repo root (requires interactive login)
+- Run `npx convex dev` from repo root (requires interactive terminal)
 - If compiled `.js`/`.d.ts` artifacts appear in `convex/`, delete them — they conflict with the `.ts` source files
 
 ## Deploy
 
-- CI: `.github/workflows/deploy.yml` runs `pnpm --filter @radar/web run deploy` on push to main
-- Requires `CLOUDFLARE_API_TOKEN` secret in GitHub repo settings
-- pnpm version is read from `package.json` `packageManager` field — do not hardcode in CI
+- **Do NOT run deploy commands yourself.** Tell the user when they need to run them.
+- **Web frontend:** `cd packages/web && pnpm run deploy` (deploys to Cloudflare Pages)
+- **Convex functions:** `npx convex deploy` from repo root (deploys schema + functions to production)
+- There is no CI pipeline — deploys are manual.
