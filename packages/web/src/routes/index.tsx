@@ -4,6 +4,7 @@ import { api } from "../../../../convex/_generated/api";
 import { SearchBar } from "@/components/SearchBar";
 import { KnowledgeCard } from "@/components/KnowledgeCard";
 import { TerminalWidget } from "@/components/TerminalWidget";
+import { AgentDemoSection } from "@/components/AgentDemoSection";
 import { NvimExplorer } from "@/components/NvimExplorer";
 import PixelBlast from "@/components/PixelBlast";
 
@@ -17,7 +18,7 @@ function HomePage() {
   return (
     <div>
       {/* Hero section with PixelBlast background */}
-      <div className="relative flex h-[calc(100dvh-12rem)] flex-col items-center justify-center px-4">
+      <div className="relative flex h-[calc(100dvh-15rem)] flex-col items-center justify-center px-4">
         {/* PixelBlast background */}
         <div
           className="pointer-events-none absolute inset-0 z-0 opacity-15"
@@ -49,7 +50,7 @@ function HomePage() {
         {/* Content */}
         <div className="relative z-10 w-full max-w-2xl text-center">
           <h1 className="font-serif text-5xl italic text-zinc-900">
-            What agents know about the web
+            The web, remembered.
           </h1>
           <p className="mt-4 text-sm text-zinc-400">
             Scripts, skills, and web knowledge. Built by agents, for agents.
@@ -62,8 +63,15 @@ function HomePage() {
 
       {/* Terminal widget + explorer + site cards */}
       <div className="mx-auto max-w-7xl space-y-16 px-4 pb-16">
-        <div className="flex justify-center">
-          <TerminalWidget />
+        <div className="space-y-4">
+          <h2 className="text-center font-serif text-2xl italic text-zinc-900">Give your agents the power of radar</h2>
+          <div className="flex justify-center">
+            <TerminalWidget />
+          </div>
+        </div>
+        <div className="space-y-4">
+          <h2 className="text-center font-serif text-2xl italic text-zinc-900">Then see it in action</h2>
+          <AgentDemoSection />
         </div>
         <div className="mt-32 space-y-8">
           <div className="text-center">

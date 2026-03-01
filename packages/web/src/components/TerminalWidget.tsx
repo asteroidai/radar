@@ -37,7 +37,6 @@ export function TerminalWidget() {
       </div>
       {/* Terminal body */}
       <div className="p-4 font-mono text-[13px] leading-6">
-        <div className="text-zinc-600"># one command to give your agent the power of radar</div>
         <span className="text-emerald-500">$</span>{" "}
         <span className="text-zinc-200">{INSTALL_CMD}</span>
         <span className="ml-0.5 inline-block h-[14px] w-[7px] translate-y-[2px] animate-blink bg-zinc-400" />
