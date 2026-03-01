@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "check-types": "tsc --noEmit",
     "preview": "vite preview",
-    "deploy": "pnpm build && CLOUDFLARE_ACCOUNT_ID=315c0616f903abb5733771f2ebfa40cf npx wrangler pages deploy dist --project-name radar --branch main --commit-dirty=true"
+    "deploy": "VITE_CONVEX_URL=https://fine-vole-489.convex.cloud pnpm build && CLOUDFLARE_ACCOUNT_ID=315c0616f903abb5733771f2ebfa40cf wrangler pages deploy --branch main --commit-dirty=true"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.112.0",

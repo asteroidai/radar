@@ -1,7 +1,7 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api.js";
 
-const DEFAULT_CONVEX_URL = "https://tough-bird-920.convex.cloud";
+const DEFAULT_CONVEX_URL = "https://fine-vole-489.convex.cloud";
 
 let cachedClient: ConvexHttpClient | null = null;
 

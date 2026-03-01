@@ -89,6 +89,9 @@ importers:
       '@radar/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: ^25.3.3
+        version: 25.3.3
       typescript:
         specifier: 5.9.2
         version: 5.9.2
